@@ -1,0 +1,59 @@
+@using Idfy.Blazor.DemoSite.Shared;
+@using Services;
+@inject DocumentService DocumentService;
+
+    <div class="app-padding">
+        <p>Attachments: @Document.Advanced.Attachments</p>
+        <p>Tags</p>
+        <MatChipSet>
+            @foreach (var tag in Document.Advanced.Tags)
+            {
+                <MatChip Label="@tag"></MatChip>
+            }
+        </MatChipSet>
+        <MatTextField @bind-Value="@Document.Advanced.CreatedByApplication" Label="Created by" Outlined="true"></MatTextField>
+        <MatTextField @bind-Value="@Document.Advanced.DepartmentId" Label="Department Id" Outlined="true"></MatTextField>
+
+        <br />
+        <MatNumericUpDownField Label="Required signatures"
+                               ValueChanged="@SetRequiredSignatures"
+                               DecimalPlaces=0
+                               Outlined="true"
+                               Minimum=0 Maximum=null>
+        </MatNumericUpDownField>
+        <br />
+        <MatNumericUpDownField Label="Delete after hours"
+                               ValueChanged="@SetDAH"
+                               Value="1"
+                               DecimalPlaces=0
+                               Outlined="true"
+                               Minimum=1 Maximum=null>
+        </MatNumericUpDownField>
+        <br />
+        <MatSlideToggle @bind-Checked="@Document.Advanced.GetSocialSecurityNumber"></MatSlideToggle> <span>Get soc sec</span>
+
+    </div>
+
+@code {
+    protected DemoDocument Document;
+    protected override async Task OnInitAsync()
+    {
+        Document = DocumentService.Document;
+    }
+
+    protected void SetRequiredSignatures(decimal? value)
+    {
+        if (value != null)
+        {
+            Document.Advanced.RequiredSignatures = (int)value.Value;
+        }
+    }
+
+    protected void SetDAH(decimal? value)
+    {
+        if (value != null)
+        {
+            Document.Advanced.TimeToLive.DeleteAfterHours = (int)value.Value;
+        }
+    }
+}

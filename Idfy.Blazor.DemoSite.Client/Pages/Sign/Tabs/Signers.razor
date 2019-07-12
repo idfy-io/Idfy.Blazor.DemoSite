@@ -1,0 +1,97 @@
+@using Idfy.Signature;
+@using Services;
+@using Idfy.Blazor.DemoSite.Shared
+@inject DocumentService DocumentService;
+
+<div class="app-padding">
+    <MatAccordion Multi="true">
+        @foreach (var signer in SignerList)
+        {
+            <MatExpansionPanel>
+                <MatExpansionPanelSummary>
+                    <MatExpansionPanelHeader>@(signer.SignerInfo.FirstName ?? "Anonymous") @(signer.SignerInfo.LastName ?? "Signer")</MatExpansionPanelHeader>
+                </MatExpansionPanelSummary>
+
+                <MatExpansionPanelDetails>
+                    <h3 class="app-title">Name</h3>
+
+                    <MatTextField @bind-Value="@signer.SignerInfo.FirstName" Label="Firstname" Outlined="true"></MatTextField>
+
+                    <MatTextField @bind-Value="@signer.SignerInfo.LastName" Label="Lastname" Outlined="true"></MatTextField>
+
+                    <h3 class="app-title">Contact</h3>
+                    <MatTextField @bind-Value="@signer.SignerInfo.Email" Label="Email" Outlined="true"></MatTextField>
+                    <MatTextField @bind-Value="@signer.SignerInfo.Mobile.CountryCode" Label="Country code" Outlined="true"></MatTextField>
+                    <MatTextField @bind-Value="@signer.SignerInfo.Mobile.Number" Label="Number" Outlined="true"></MatTextField>
+
+                    <h3 class="app-title">Redirect</h3>
+                    <MatSelect Label="Select redirect mode" ValueChanged="@((value) => SetRedirectMode(signer, value))" Outlined="true">
+                        @foreach (RedirectMode redirectMode in Enum.GetValues(typeof(RedirectMode)))
+                        {
+                            <MatOption Value="@redirectMode.ToString()">@redirectMode.ToString()</MatOption>
+                        }
+                    </MatSelect>
+
+                    @if (!new[] { RedirectMode.DonotRedirect, RedirectMode.IframeWithWebmessaging }.Contains(signer.RedirectSettings.RedirectMode))
+                    {
+                        <MatTextField @bind-Value="@signer.RedirectSettings.Success" Label="Success" FullWidth="true" Outlined="true"></MatTextField>
+                        <MatTextField @bind-Value="@signer.RedirectSettings.Error" Label="Error" FullWidth="true" Outlined="true"></MatTextField>
+                        <MatTextField @bind-Value="@signer.RedirectSettings.Cancel" Label="Cancel" FullWidth="true" Outlined="true"></MatTextField>
+                    }
+
+
+                    <br />
+                    <h3 class="app-title">Advanced</h3>
+                    <MatSlideToggle  @bind-Checked="@signer.GetSocialSecurityNumber"></MatSlideToggle> <span>Get soc sec</span>
+                    <br />
+                    <MatSlideToggle @bind-Checked="@signer.Required"></MatSlideToggle> <span>Required signature</span>
+
+                    <br />
+                    <MatNumericUpDownField Label="Order"
+                                           ValueChanged="@((value) => SetOrder(signer, value))"
+                                           DecimalPlaces=0
+                                           Outlined="true"
+                                           Minimum=0 Maximum=null>
+                    </MatNumericUpDownField>
+                </MatExpansionPanelDetails>
+
+            </MatExpansionPanel>
+        }
+    </MatAccordion>
+    <MatButton Class="full-width btn-margin" OnClick="@AddSigner">Add new</MatButton>
+
+</div>
+
+
+
+@code {
+    List<DemoSigner> SignerList;
+
+    protected override async Task OnInitAsync()
+    {
+        SignerList = DocumentService.Document.Signers;
+    }
+
+    protected void SetRedirectMode(SignerOptions signer, string value)
+    {
+        RedirectMode redirectMode;
+        if (Enum.TryParse(value, out redirectMode))
+        {
+            signer.RedirectSettings.RedirectMode = redirectMode;
+        }
+    }
+
+    protected void SetOrder(SignerOptions signer, decimal? value)
+    {
+        if (value != null)
+        {
+            signer.Order = (int)value.Value;
+        }
+    }
+
+    protected void AddSigner(UIMouseEventArgs e)
+    {
+        DocumentService.AddSigner();
+    }
+
+}

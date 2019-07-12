@@ -1,0 +1,37 @@
+﻿@inherits LayoutComponentBase
+
+<MatThemeProvider Theme="@theme">
+    <MatAppBarContainer>
+        <MatAppBar Fixed="true">
+            <MatAppBarRow>
+                <MatAppBarSection>
+                    <MatIconButton Icon="menu"></MatIconButton>
+                    <MatAppBarTitle>Idfy demo site</MatAppBarTitle>
+                </MatAppBarSection>
+                <MatAppBarSection Align="@MatAppBarSectionAlign.End">
+                    <MatIconButton Icon="favorite"></MatIconButton>
+                </MatAppBarSection>
+            </MatAppBarRow>
+        </MatAppBar>
+
+        <MatAppBarContent>
+            <div class="main mat">
+                <div class="content px-4 app">
+                    @Body
+                </div>
+            </div>
+        </MatAppBarContent>
+    </MatAppBarContainer>
+</MatThemeProvider>
+
+
+
+@functions
+    {
+    MatTheme theme = new MatTheme()
+    {
+        Primary = MatThemeColors.Orange._500.Value,
+        Secondary = MatThemeColors.BlueGrey._500.Value
+    };
+}
+

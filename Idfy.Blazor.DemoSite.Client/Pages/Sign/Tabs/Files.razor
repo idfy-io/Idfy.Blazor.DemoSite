@@ -1,0 +1,49 @@
+@using Idfy.Blazor.DemoSite.Shared
+@using Services;
+@inject DocumentService DocumentService;
+
+<div class="app-padding">
+
+    <MatAccordion Multi="true">
+        @foreach (var doc in DocumentService.Files)
+        {
+            <MatExpansionPanel>
+                <MatExpansionPanelSummary>
+                    <MatExpansionPanelHeader>@doc.Title</MatExpansionPanelHeader>
+                    <MatExpansionPanelSubHeader>
+                        Filetype: @doc.Type
+                    </MatExpansionPanelSubHeader>
+                </MatExpansionPanelSummary>
+
+
+                <MatExpansionPanelDetails>
+                    <MatTextField @bind-Value="@doc.Title" Label="Title" FullWidth="true"></MatTextField>
+                    <MatTextField @bind-Value="@doc.Description" Label="Description" TextArea="true" FullWidth="true"></MatTextField>
+                    <MatTextField @bind-Value="@doc.FileName" Label="Filename" FullWidth="true"></MatTextField>
+                    <br />
+                    <MatSlideToggle @bind-Checked="@doc.ConvertToPDF"></MatSlideToggle> <span>Convert to pdf</span>
+                </MatExpansionPanelDetails>
+            </MatExpansionPanel>
+        }
+    </MatAccordion>
+    <MatButton Class="full-width btn-margin" OnClick="@AddFile">Add new</MatButton>
+</div>
+
+
+
+@code {
+
+
+protected override async Task OnInitAsync()
+{
+    DocumentService.UpdateFiles();
+}
+
+protected void AddFile(UIMouseEventArgs evt)
+{
+    DocumentService.Files.Add(DocumentService.DefaultTxtFile);
+    DocumentService.UpdateFiles();
+}
+
+
+}

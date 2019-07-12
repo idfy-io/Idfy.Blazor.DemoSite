@@ -1,0 +1,36 @@
+@page  "/sign"
+@using Idfy.Blazor.DemoSite.Shared
+
+<div class="d-flex align-items-center">
+    <div id="create-doc-container" Class="app-container app-padding">
+        <MatTabGroup>
+            <MatTab Label="General">
+                <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.General></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.General>
+            </MatTab>
+            <MatTab Label="Files">
+                <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Files></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Files>
+            </MatTab>
+            <MatTab Label="Signers">
+                <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signers></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signers>
+            </MatTab>
+            <MatTab Label="Advanced">
+                <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Advanced></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Advanced>
+            </MatTab>
+
+        </MatTabGroup>
+        <MatThemeProvider Theme="@successTheme">
+            <MatButton Class="full-width" Raised="true" Icon="pets" TrailingIcon="pets">Create Document</MatButton>
+        </MatThemeProvider>
+
+    </div>
+</div>
+
+@functions
+        {
+
+    MatTheme successTheme = new MatTheme()
+    {
+        Primary = MatThemeColors.Green._500.Value,
+        Secondary = MatThemeColors.Green._500.Value
+    };
+}
