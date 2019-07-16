@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace Idfy.Blazor.DemoSite.Shared
 {
-    public class DemoSigner: SignerOptions
+    public class DemoSigner: Signer
     {
         public bool GetSocialSecurityNumber { get; set; }
         public new bool Required { get; set; }
     }
 
-    public class DemoDocument: DocumentCreateOptions
+    public class DemoDocument: Document
     {
         public new List<DemoSigner> Signers { get; set; }
         public new DemoAdvanced Advanced { get; set; }

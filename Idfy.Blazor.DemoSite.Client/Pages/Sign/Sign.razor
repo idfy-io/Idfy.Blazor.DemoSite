@@ -1,29 +1,67 @@
 @page  "/sign"
 @using Idfy.Blazor.DemoSite.Shared
+@using Cloudcrate.AspNetCore.Blazor.Browser.Storage;
+@using Services;
+@inject DocumentService DocumentService
+@inject IUriHelper UriHelper
+@inject HttpClient Http
+@inject LocalStorage Storage
 
-<div class="d-flex align-items-center">
-    <div id="create-doc-container" Class="app-container app-padding">
-        <MatTabGroup>
-            <MatTab Label="General">
-                <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.General></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.General>
-            </MatTab>
-            <MatTab Label="Files">
-                <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Files></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Files>
-            </MatTab>
-            <MatTab Label="Signers">
-                <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signers></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signers>
-            </MatTab>
-            <MatTab Label="Advanced">
-                <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Advanced></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Advanced>
-            </MatTab>
 
-        </MatTabGroup>
-        <MatThemeProvider Theme="@successTheme">
-            <MatButton Class="full-width" Raised="true" Icon="pets" TrailingIcon="pets">Create Document</MatButton>
-        </MatThemeProvider>
+<MatProgressBar Closed="@loaded" Indeterminate="true"></MatProgressBar>
+@if (loaded)
+{
+    <div class="d-flex align-items-center">
+
+        <div id="create-doc-container" Class="app-container app-padding">
+            <MatTabGroup>
+                <MatTab Label="General">
+                    <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.General></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.General>
+                </MatTab>
+                <MatTab Label="Files">
+                    <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Files></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Files>
+                </MatTab>
+                <MatTab Label="Signers">
+                    <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signers></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signers>
+                </MatTab>
+                <MatTab Label="Advanced">
+                    <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Advanced></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Advanced>
+                </MatTab>
+            </MatTabGroup>
+
+
+            @if (DocumentService.Document?.DocumentId != null && !DocumentService.Document.DocumentId.Equals(Guid.Empty))
+            {
+                <p>Currently viewing document with Id: @DocumentService.Document.DocumentId</p>
+                <MatThemeProvider Theme="@successTheme">
+                    <MatButton Raised="true" Icon="refresh" OnClick="args => Refresh(args)">Refresh</MatButton>
+                </MatThemeProvider>
+                <MatThemeProvider >
+                    <MatButton Raised="true" Icon="clear" OnClick="Clear">Clear</MatButton>
+                </MatThemeProvider>
+            }
+            else
+            {
+                <MatThemeProvider Theme="@successTheme">
+                    <MatButton Class="full-width" Raised="true" Icon="pets" OnClick="CreateDocument" TrailingIcon="pets">Create Document</MatButton>
+                </MatThemeProvider>
+            }
+
+            <MatDialog @bind-IsOpen="@dialogIsOpen">
+                <MatDialogTitle>An error occured</MatDialogTitle>
+                <MatDialogContent>
+                    <p>@error</p>
+                </MatDialogContent>
+                <MatDialogActions>
+                    <MatButton OnClick="@CloseDialog">OK</MatButton>
+                </MatDialogActions>
+            </MatDialog>
+
+        </div>
 
     </div>
-</div>
+}
+
 
 @functions
         {
@@ -33,4 +71,83 @@
         Primary = MatThemeColors.Green._500.Value,
         Secondary = MatThemeColors.Green._500.Value
     };
+}
+
+@code {
+    bool loaded = true;
+    bool dialogIsOpen = false;
+    string error = "";
+
+    protected override async Task OnInitAsync()
+    {
+        var currentDoc = Storage["document"];
+
+        if (!string.IsNullOrWhiteSpace(currentDoc))
+        {
+            await this.Refresh(null, Guid.Parse(currentDoc));
+        }
+
+    }
+
+    void CloseDialog()
+    {
+        dialogIsOpen = false;
+    }
+
+    protected async Task Clear(UIMouseEventArgs args)
+    {
+        await ExecuteWithErrorHandling(async () =>
+        {
+            loaded = false;
+            await Task.Delay(1000); //Just a temp workaround to reset view
+            Storage.Clear();
+            DocumentService.Init();
+            loaded = true;
+        });
+    }
+
+    protected async Task Refresh(UIMouseEventArgs args, Guid? documentId = null)
+    {
+        await ExecuteWithErrorHandling(async () =>
+        {
+            await DocumentService.GetDocument(UriHelper.GetBaseUri(), documentId);
+        });
+    }
+
+    protected async Task CreateDocument(UIMouseEventArgs args)
+    {
+        await ExecuteWithErrorHandling(async () =>
+        {
+            var result = await this.DocumentService.CreateDocument(UriHelper.GetBaseUri());
+            DocumentService.Document = result;
+            Storage["document"] = result.DocumentId.ToString();
+        });
+
+    }
+
+    protected async Task ExecuteWithErrorHandling(Func<Task> func)
+    {
+        try
+        {
+            loaded = false;
+            await func.Invoke();
+        }
+        catch (IdfyException e)
+        {
+            this.error = $"{e.Error?.ErrorDescription}\n\n" +
+                    $"{e.Message}\n\n" +
+                    $"{e.Response?.ResponseJson}";
+            this.dialogIsOpen = true;
+        }
+        catch (Exception e)
+        {
+            this.error = e.Message + "\n\n" + Newtonsoft.Json.JsonConvert.SerializeObject(e);
+            this.dialogIsOpen = true;
+        }
+        finally
+        {
+            loaded = true;
+        }
+
+    }
 }

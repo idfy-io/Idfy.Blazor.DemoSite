@@ -18,8 +18,9 @@
   <ItemGroup>
     <Watch Remove="Pages\Sign\Tabs\Advanced.razor" />
     <Watch Remove="Pages\Sign\Tabs\General.razor" />
-  </ItemGroup>
+  </ItemGroup> 
   <ItemGroup>
+    <PackageReference Include="Cloudcrate.AspNetCore.Blazor.Browser.Storage" Version="3.0.0-preview6.19307.4" />
     <PackageReference Include="MatBlazor" Version="1.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="3.0.0-preview6.19307.2" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="3.0.0-preview6.19307.2" PrivateAssets="all" />

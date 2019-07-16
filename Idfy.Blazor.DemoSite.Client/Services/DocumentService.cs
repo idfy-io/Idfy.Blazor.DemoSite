@@ -4,15 +4,27 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using System.Net.Http;
+using Microsoft.AspNetCore.Components;
 
 namespace Idfy.Blazor.DemoSite.Client.Services
 {
-    public class DocumentService
+    public class DocumentService : IDisposable
     {
         public DemoDocument Document { get; set; }
         public List<DemoSite.Shared.DemoFile> Files { get; set; }
 
-        public DocumentService()
+        private readonly EnvironmentService environmentService;
+        private HttpClient httpClient;
+        public DocumentService(EnvironmentService environmentService, HttpClient httpClient)
+        {
+            this.environmentService = environmentService;
+            this.httpClient = httpClient;
+            Init();
+        }
+
+        public void Init()
         {
             Files = new List<DemoSite.Shared.DemoFile>
             {
@@ -40,7 +52,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 {
                     Email = "support@idfy.io",
                     Name = "Idfy Norge",
-                    Url = "https://idfy.io",                    
+                    Url = "https://idfy.io",
                 },
                 DataToSign = new DataToSign(),
                 Description = "Demo site test document",
@@ -62,10 +74,17 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                         RedirectSettings = new RedirectSettings()
                         {
                             RedirectMode = RedirectMode.DonotRedirect
+                        },
+                        ExternalSignerId = Guid.NewGuid().ToString(),
+                        SignatureType = new SignatureType()
+                        {
+                            Mechanism = SignatureMechanism.PkiSignature
                         }
                     }
                 }
             };
+
+            UpdateFiles();
         }
 
         public void AddSigner()
@@ -73,7 +92,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             Document.Signers.Add(new DemoSigner()
             {
                 SignerInfo = new SignerInfo()
-                {
+                {                   
                     Mobile = new Mobile()
                     {
                         CountryCode = "+47",
@@ -82,6 +101,11 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 RedirectSettings = new RedirectSettings()
                 {
                     RedirectMode = RedirectMode.DonotRedirect
+                },
+                ExternalSignerId = Guid.NewGuid().ToString(),
+                SignatureType = new SignatureType()
+                {
+                    Mechanism = SignatureMechanism.PkiSignature
                 }
             });
         }
@@ -125,5 +149,35 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             }
         }
 
+        public async Task GetDocument(string baseUrl, Guid? documentId = null)
+        {
+            var result = await httpClient.GetAsync($"{baseUrl}api/Sign/{documentId ?? Document.DocumentId}");
+            var resultAsString = await result.Content.ReadAsStringAsync();
+            if (result.IsSuccessStatusCode)
+            {
+                this.Document = Newtonsoft.Json.JsonConvert.DeserializeObject<DemoDocument>(resultAsString);
+            }
+            throw Newtonsoft.Json.JsonConvert.DeserializeObject<IdfyException>(resultAsString);
+        }   
+
+        public async Task<DemoDocument> CreateDocument(string baseUrl)
+        {
+
+            var doc = Newtonsoft.Json.JsonConvert.SerializeObject(this.Document);
+            var result = await httpClient.PostAsync($"{baseUrl}api/Sign/Create", new StringContent(doc, Encoding.UTF8, "application/json"));
+            var resultAsString = await result.Content.ReadAsStringAsync();
+
+            if (result.IsSuccessStatusCode)
+            {
+                return Newtonsoft.Json.JsonConvert.DeserializeObject<DemoDocument>(resultAsString);
+            }
+            throw Newtonsoft.Json.JsonConvert.DeserializeObject<IdfyException>(resultAsString);
+
+        }
+
+        public void Dispose()
+        {
+            this.httpClient.Dispose();
+        }
     }
 }

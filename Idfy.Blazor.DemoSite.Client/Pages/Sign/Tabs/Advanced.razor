@@ -3,6 +3,7 @@
 @inject DocumentService DocumentService;
 
     <div class="app-padding">
+        <MatSlideToggle @bind-Checked="@Document.Advanced.GetSocialSecurityNumber"></MatSlideToggle> <span>Get soc sec</span>
         <p>Attachments: @Document.Advanced.Attachments</p>
         <p>Tags</p>
         <MatChipSet>
@@ -30,7 +31,6 @@
                                Minimum=1 Maximum=null>
         </MatNumericUpDownField>
         <br />
-        <MatSlideToggle @bind-Checked="@Document.Advanced.GetSocialSecurityNumber"></MatSlideToggle> <span>Get soc sec</span>
 
     </div>
 

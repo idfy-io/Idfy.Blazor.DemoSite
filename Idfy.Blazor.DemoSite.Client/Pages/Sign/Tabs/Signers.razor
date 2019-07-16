@@ -1,58 +1,92 @@
 @using Idfy.Signature;
 @using Services;
 @using Idfy.Blazor.DemoSite.Shared
+@inject IJSRuntime JsRuntime;
 @inject DocumentService DocumentService;
 
 <div class="app-padding">
     <MatAccordion Multi="true">
-        @foreach (var signer in SignerList)
+        @foreach (var signer in DocumentService.Document.Signers)
         {
             <MatExpansionPanel>
                 <MatExpansionPanelSummary>
                     <MatExpansionPanelHeader>@(signer.SignerInfo.FirstName ?? "Anonymous") @(signer.SignerInfo.LastName ?? "Signer")</MatExpansionPanelHeader>
+                    <MatExpansionPanelSubHeader>
+                        @if (!string.IsNullOrWhiteSpace(signer.Url))
+                        {
+                            <MatButton Class="full-width" Raised="true" OnClick="args => Sign(args, signer)">Sign</MatButton>
+                        }
+                        else if (signer.DocumentSignature != null)
+                        {
+                            <MatButton Class="full-width" Raised="true" OnClick="args => ViewDocumentSignature(args, signer)">View signature</MatButton>
+                        }
+                    </MatExpansionPanelSubHeader>
                 </MatExpansionPanelSummary>
 
                 <MatExpansionPanelDetails>
-                    <h3 class="app-title">Name</h3>
+                    <div class="container">
+                        <h3 class="app-title">Name</h3>
 
-                    <MatTextField @bind-Value="@signer.SignerInfo.FirstName" Label="Firstname" Outlined="true"></MatTextField>
+                        <MatTextField @bind-Value="@signer.SignerInfo.FirstName" Label="Firstname" Outlined="true"></MatTextField>
 
-                    <MatTextField @bind-Value="@signer.SignerInfo.LastName" Label="Lastname" Outlined="true"></MatTextField>
+                        <MatTextField @bind-Value="@signer.SignerInfo.LastName" Label="Lastname" Outlined="true"></MatTextField>
 
-                    <h3 class="app-title">Contact</h3>
-                    <MatTextField @bind-Value="@signer.SignerInfo.Email" Label="Email" Outlined="true"></MatTextField>
-                    <MatTextField @bind-Value="@signer.SignerInfo.Mobile.CountryCode" Label="Country code" Outlined="true"></MatTextField>
-                    <MatTextField @bind-Value="@signer.SignerInfo.Mobile.Number" Label="Number" Outlined="true"></MatTextField>
+                        <h3 class="app-title">Contact</h3>
+                        <MatTextField @bind-Value="@signer.SignerInfo.Email" Label="Email" Outlined="true"></MatTextField>
+                        <MatTextField @bind-Value="@signer.SignerInfo.Mobile.CountryCode" Label="Country code" Outlined="true"></MatTextField>
+                        <MatTextField @bind-Value="@signer.SignerInfo.Mobile.Number" Label="Number" Outlined="true"></MatTextField>
 
-                    <h3 class="app-title">Redirect</h3>
-                    <MatSelect Label="Select redirect mode" ValueChanged="@((value) => SetRedirectMode(signer, value))" Outlined="true">
-                        @foreach (RedirectMode redirectMode in Enum.GetValues(typeof(RedirectMode)))
+                        <h3 class="app-title"></h3>
+
+                        <h3 class="app-title">Signature methods</h3>
+                        <MatSelect Label="Select mechanism" Value="@signer.SignatureType.Mechanism.ToString()" ValueChanged="@((value) => SetMechanism(signer, value))" Outlined="true">
+                            @foreach (SignatureMechanism mechanism in Enum.GetValues(typeof(SignatureMechanism)))
+                            {
+                                <MatOption Value="@mechanism.ToString()">@mechanism.ToString()</MatOption>
+                            }
+                        </MatSelect>
+
+                        <h3 class="app-title">Redirect</h3>
+                        <MatSelect Label="Select redirect mode" Value="@signer.RedirectSettings.RedirectMode.ToString()" ValueChanged="@((value) => SetRedirectMode(signer, value))" Outlined="true">
+                            @foreach (RedirectMode redirectMode in Enum.GetValues(typeof(RedirectMode)))
+                            {
+                                <MatOption Value="@redirectMode.ToString()">@redirectMode.ToString()</MatOption>
+                            }
+                        </MatSelect>
+
+                        @if (!new[] { RedirectMode.DonotRedirect, RedirectMode.IframeWithWebmessaging }.Contains(signer.RedirectSettings.RedirectMode))
                         {
-                            <MatOption Value="@redirectMode.ToString()">@redirectMode.ToString()</MatOption>
+                            <MatTextField @bind-Value="@signer.RedirectSettings.Success" Label="Success" FullWidth="true" Outlined="true"></MatTextField>
+                            <MatTextField @bind-Value="@signer.RedirectSettings.Error" Label="Error" FullWidth="true" Outlined="true"></MatTextField>
+                            <MatTextField @bind-Value="@signer.RedirectSettings.Cancel" Label="Cancel" FullWidth="true" Outlined="true"></MatTextField>
                         }
-                    </MatSelect>
 
-                    @if (!new[] { RedirectMode.DonotRedirect, RedirectMode.IframeWithWebmessaging }.Contains(signer.RedirectSettings.RedirectMode))
-                    {
-                        <MatTextField @bind-Value="@signer.RedirectSettings.Success" Label="Success" FullWidth="true" Outlined="true"></MatTextField>
-                        <MatTextField @bind-Value="@signer.RedirectSettings.Error" Label="Error" FullWidth="true" Outlined="true"></MatTextField>
-                        <MatTextField @bind-Value="@signer.RedirectSettings.Cancel" Label="Cancel" FullWidth="true" Outlined="true"></MatTextField>
-                    }
+                        <h3 class="app-title">Advanced</h3>
+                        <div class="mat-layout-grid">
+                            <div class="mat-layout-grid-inner">
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                    <MatSlideToggle @bind-Checked="@signer.GetSocialSecurityNumber"></MatSlideToggle> <span>Get soc sec</span>
+                                </div>
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                    <MatSlideToggle @bind-Checked="@signer.Required"></MatSlideToggle> <span>Required signature</span>
+                                </div>
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                    <MatTextField Class="full-width" @bind-Value="@signer.ExternalSignerId" Label="External Id" Outlined="true"></MatTextField>
+                                </div>
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                    <MatNumericUpDownField Label="Order"
+                                                           ValueChanged="@((value) => SetOrder(signer, value))"
+                                                           DecimalPlaces=0
+                                                           Outlined="true"
+                                                           Minimum=0 Maximum=null
+                                                           Class="full-width">
+                                    </MatNumericUpDownField>
+                                </div>
 
+                            </div>
+                        </div>
+                    </div>
 
-                    <br />
-                    <h3 class="app-title">Advanced</h3>
-                    <MatSlideToggle  @bind-Checked="@signer.GetSocialSecurityNumber"></MatSlideToggle> <span>Get soc sec</span>
-                    <br />
-                    <MatSlideToggle @bind-Checked="@signer.Required"></MatSlideToggle> <span>Required signature</span>
-
-                    <br />
-                    <MatNumericUpDownField Label="Order"
-                                           ValueChanged="@((value) => SetOrder(signer, value))"
-                                           DecimalPlaces=0
-                                           Outlined="true"
-                                           Minimum=0 Maximum=null>
-                    </MatNumericUpDownField>
                 </MatExpansionPanelDetails>
 
             </MatExpansionPanel>
@@ -60,11 +94,60 @@
     </MatAccordion>
     <MatButton Class="full-width btn-margin" OnClick="@AddSigner">Add new</MatButton>
 
+
+    <MatDialog Class="large-dialog" @bind-IsOpen="@signatureDialogIsOpen">
+        <MatDialogTitle>Signature data</MatDialogTitle>
+        <MatDialogContent Class="large-dialog-content">
+
+            @if (currentSigner?.DocumentSignature != null)
+            {
+                var signature = currentSigner.DocumentSignature;
+                <div class="mat-layout-grid">
+                    <div class="mat-layout-grid-inner">
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                            <h3 class="app-title">Name</h3>
+                            <p>Full: @signature.FullName</p>
+                            <p>Last: @signature.LastName</p>
+                            <p>Middle: @signature.MiddleName</p>
+                            <p>First: @signature.FirstName</p>
+                        </div>
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                            <h3 class="app-title">Signature method</h3>
+                            <p>Type: @signature.SignatureMethod </p>
+                            <p>Unique Id: @signature.SignatureMethodUniqueId</p>
+                        </div>
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                            <h3 class="app-title">Date of birth</h3>
+                            <p>@(signature.DateOfBirth ?? "Not set") </p>
+                        </div>
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                            <h3 class="app-title">National Id / Soc sec</h3>
+                            <p>Country code: @(signature.SocialSecurityNumber?.CountryCode ?? "Not set")  </p>
+                            <p>Value: @(signature.SocialSecurityNumber?.Value ?? "Not set") </p>
+                        </div>
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                            <h3 class="app-title">Signed time</h3>
+                            <p>@signature.SignedTime UTC</p>
+                        </div>
+                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                            <h3 class="app-title">Client Ip</h3>
+                            <p>@signature.ClientIp </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </MatDialogContent>
+        <MatDialogActions>
+            <MatButton OnClick="@CloseDocumentSignature">OK</MatButton>
+        </MatDialogActions>
+    </MatDialog>
 </div>
 
 
 
 @code {
+    bool signatureDialogIsOpen = false;
+    DemoSigner currentSigner;
     List<DemoSigner> SignerList;
 
     protected override async Task OnInitAsync()
@@ -72,7 +155,7 @@
         SignerList = DocumentService.Document.Signers;
     }
 
-    protected void SetRedirectMode(SignerOptions signer, string value)
+    protected void SetRedirectMode(Signer signer, string value)
     {
         RedirectMode redirectMode;
         if (Enum.TryParse(value, out redirectMode))
@@ -81,7 +164,16 @@
         }
     }
 
-    protected void SetOrder(SignerOptions signer, decimal? value)
+    protected void SetMechanism(Signer signer, string value)
+    {
+        SignatureMechanism mechanism;
+        if (Enum.TryParse(value, out mechanism))
+        {
+            signer.SignatureType.Mechanism = mechanism;
+        }
+    }
+
+    protected void SetOrder(Signer signer, decimal? value)
     {
         if (value != null)
         {
@@ -92,6 +184,22 @@
     protected void AddSigner(UIMouseEventArgs e)
     {
         DocumentService.AddSigner();
+    }
+
+    protected async Task Sign(UIMouseEventArgs args, Signer signer)
+    {
+        await JsRuntime.InvokeAsync<object>("open", signer.Url, "_blank");
+    }
+
+    protected void ViewDocumentSignature(UIMouseEventArgs e, DemoSigner signer)
+    {
+        currentSigner = signer;
+        this.signatureDialogIsOpen = true;
+    }
+
+    protected void CloseDocumentSignature(UIMouseEventArgs e)
+    {
+        this.signatureDialogIsOpen = false;
     }
 
 }

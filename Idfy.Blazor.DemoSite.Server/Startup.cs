@@ -1,3 +1,4 @@
+using Idfy.Signature;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -19,14 +20,16 @@ namespace Idfy.Blazor.DemoSite.Server
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
-            });         
+            });
+            services.AddSingleton<ISignatureService, SignatureService>();
+            services.AddSingleton<AppSettings>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseResponseCompression();
-
+   
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

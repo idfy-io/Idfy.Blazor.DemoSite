@@ -319,3 +319,4 @@ typings/
 !**/idfy.Signature.WebHost/wwwroot
 **/fm_buff
 src/idfy.Signature/idfy.Signature.WebHost/Properties/iispub.xml
+**/appsettings.vegard.json

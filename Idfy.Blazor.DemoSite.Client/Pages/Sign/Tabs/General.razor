@@ -5,6 +5,12 @@
 
 
 <div class="app-padding">
+
+    <div class="doc-status">
+        <p>Document status</p>
+        <h3>@(Document.Status?.DocumentStatus.ToString() ?? "Not created yet")</h3>
+    </div>
+
     <MatTextField @bind-Value="@Document.ExternalId" Label="External Id" Outlined="true"></MatTextField>
 
     <p>Contact Info</p>

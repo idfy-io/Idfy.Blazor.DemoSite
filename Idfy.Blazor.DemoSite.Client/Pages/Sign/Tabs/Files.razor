@@ -1,6 +1,10 @@
 @using Idfy.Blazor.DemoSite.Shared
 @using Services;
 @inject DocumentService DocumentService;
+@inject IJSRuntime JsRuntime;
+@inject IUriHelper UriHelper
+
+
 
 <div class="app-padding">
 
@@ -18,15 +22,27 @@
 
                 <MatExpansionPanelDetails>
                     <MatTextField @bind-Value="@doc.Title" Label="Title" FullWidth="true"></MatTextField>
-                    <MatTextField @bind-Value="@doc.Description" Label="Description" TextArea="true" FullWidth="true"></MatTextField>
                     <MatTextField @bind-Value="@doc.FileName" Label="Filename" FullWidth="true"></MatTextField>
-                    <br />
+                    <br /><br />
+                    <MatTextField @bind-Value="@doc.Description" Label="Description" TextArea="true" FullWidth="true"></MatTextField>
+                    <br /><br />
                     <MatSlideToggle @bind-Checked="@doc.ConvertToPDF"></MatSlideToggle> <span>Convert to pdf</span>
                 </MatExpansionPanelDetails>
             </MatExpansionPanel>
         }
     </MatAccordion>
     <MatButton Class="full-width btn-margin" OnClick="@AddFile">Add new</MatButton>
+
+    @if (DocumentService.Document?.Status?.CompletedPackages != null)
+    {
+        <h3 class="app-title">@DocumentService.Document.Title - Download files</h3>
+        <MatButton OnClick="@(args => Download(args, Idfy.Signature.FileFormat.Unsigned))" Class="btn-margin">@Idfy.Signature.FileFormat.Unsigned</MatButton>
+        @foreach (var package in DocumentService.Document.Status.CompletedPackages)
+        {
+            <MatButton OnClick="@(args => Download(args, package))" Class="btn-margin">@package</MatButton>
+        }
+    }
+
 </div>
 
 
@@ -34,16 +50,36 @@
 @code {
 
 
-protected override async Task OnInitAsync()
-{
-    DocumentService.UpdateFiles();
-}
+    protected override async Task OnInitAsync()
+    {
+        DocumentService.UpdateFiles();
+    }
 
-protected void AddFile(UIMouseEventArgs evt)
-{
-    DocumentService.Files.Add(DocumentService.DefaultTxtFile);
-    DocumentService.UpdateFiles();
-}
+    protected void AddFile(UIMouseEventArgs evt)
+    {
+        DocumentService.Files.Add(DocumentService.DefaultTxtFile);
+        DocumentService.UpdateFiles();
+    }
+
+    protected async Task Download(UIMouseEventArgs evt, Idfy.Signature.FileFormat fileFormat, Guid? documentItemId = null)
+    {
+        try
+        {
+            var url = $"{UriHelper.GetBaseUri()}api/Sign/{DocumentService.Document.DocumentId}/files?fileFormat={fileFormat}";
+
+            if (documentItemId != null)
+                url += $"&documentItemId={documentItemId}";
+
+            Console.WriteLine(url);
+
+            await JsRuntime.InvokeAsync<object>("open", url, "_blank");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+
+    }
 
 
 }

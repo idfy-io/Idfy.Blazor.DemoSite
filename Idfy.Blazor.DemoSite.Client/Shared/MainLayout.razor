@@ -1,4 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@inherits LayoutComponentBase;
+@using Services;
+@inject EnvironmentService EnvironmentService;
+@inject IUriHelper UriHelper;
+
 
 <MatThemeProvider Theme="@theme">
     <MatAppBarContainer>
@@ -9,7 +13,15 @@
                     <MatAppBarTitle>Idfy demo site</MatAppBarTitle>
                 </MatAppBarSection>
                 <MatAppBarSection Align="@MatAppBarSectionAlign.End">
-                    <MatIconButton Icon="favorite"></MatIconButton>
+                    <div>
+                        <MatSelect ValueChanged="UpdateEnv" Label="" Outlined="true">
+                            @foreach (var env in EnvironmentService.Environments)
+                            {
+                                <MatOption Value="@env">@env</MatOption>
+                            }
+                        </MatSelect>
+                    </div>
+                    
                 </MatAppBarSection>
             </MatAppBarRow>
         </MatAppBar>
@@ -26,12 +38,24 @@
 
 
 
-@functions
-    {
+@functions {
     MatTheme theme = new MatTheme()
     {
         Primary = MatThemeColors.Orange._500.Value,
         Secondary = MatThemeColors.BlueGrey._500.Value
     };
 }
+
+@code {
+    protected override async Task OnInitAsync()
+    {
+        await EnvironmentService.Initialize(UriHelper.GetBaseUri());
+    }
+
+    protected void UpdateEnv(string value)
+    {
+        EnvironmentService.CurrentEnvironment = value;
+    }
+}
+
 
