@@ -38,10 +38,13 @@
             @if (DocumentService.Document?.DocumentId != null && !DocumentService.Document.DocumentId.Equals(Guid.Empty))
             {
                 <p>Currently viewing document with Id: @DocumentService.Document.DocumentId</p>
-
                 <SuccessButton Icon="refresh" OnClick="args => Refresh(args)">Refresh</SuccessButton>
 
-                <MatButton Raised="true" Icon="clear" OnClick="Clear">Clear</MatButton>
+                @if (DocumentService.Document.Status.DocumentStatus != Signature.DocumentStatus.Signed)
+                {
+                    <MatButton Outlined="true" Icon="update" OnClick="UpdateDocument">Update document</MatButton>
+                }
+                <MatButton Outlined="true" Icon="clear" OnClick="Clear">Clear</MatButton>
             }
             else
             {
@@ -107,6 +110,14 @@
         {
             await DocumentService.GetDocument(UriHelper.GetBaseUri(), documentId);
         }, clearCacheOnError);
+    }
+
+    protected async Task UpdateDocument(UIMouseEventArgs args)
+    {
+        await ExecuteWithErrorHandling(async () =>
+        {
+            await DocumentService.UpdateDocument(UriHelper.GetBaseUri());
+        });
     }
 
     protected async Task CreateDocument(UIMouseEventArgs args)

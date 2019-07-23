@@ -10,6 +10,7 @@ using AspNetCoreRateLimit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
 using Idfy.Blazor.DemoSite.Server.Clients;
+using ElectronNET.API;
 
 namespace Idfy.Blazor.DemoSite.Server
 {
@@ -82,6 +83,9 @@ namespace Idfy.Blazor.DemoSite.Server
                 endpoints.MapDefaultControllerRoute();
                 endpoints.MapFallbackToClientSideBlazor<Client.Startup>("index.html");
             });
+
+            Electron.WindowManager.CreateWindowAsync();
+
         }
     }
 }

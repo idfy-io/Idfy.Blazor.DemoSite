@@ -57,7 +57,7 @@
     {
         get
         {
-            return (decimal)Document.Advanced.RequiredSignatures;
+            return (decimal?)Document.Advanced.RequiredSignatures;
         }
         set
         {
@@ -69,7 +69,7 @@
     {
         get
         {
-            return (decimal?)Document.Advanced.TimeToLive.DeleteAfterHours;
+            return (decimal?)(Document.Advanced.TimeToLive.DeleteAfterHours ?? 1);
         }
         set
         {

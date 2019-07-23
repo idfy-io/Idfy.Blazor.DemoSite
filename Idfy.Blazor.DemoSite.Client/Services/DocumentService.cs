@@ -167,7 +167,25 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 Base64ContentStyleSheet = Document.DataToSign.Base64ContentStyleSheet
             });
             await GetAttachments(baseUrl);
-        }   
+        }
+
+        public async Task UpdateDocument(string baseUrl)
+        {
+            var doc = Newtonsoft.Json.JsonConvert.SerializeObject(this.Document);
+
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{baseUrl}api/Sign/Update/{Document.DocumentId}")
+            {
+                Content = new StringContent(doc, Encoding.UTF8, "application/json")
+            };
+
+            var result = await httpClient.SendAsync(request);
+            var resultAsString = await result.Content.ReadAsStringAsync();
+            Console.WriteLine($"Status code: {result.StatusCode}");
+            VerifySuccess(result, resultAsString);
+
+            //TODO: use response when new version including full response is released 
+            await GetDocument(baseUrl);
+        }
 
         public async Task<DemoDocument> CreateDocument(string baseUrl)
         {

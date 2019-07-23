@@ -34,6 +34,23 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
             }
         }
 
+        [HttpPatch]
+        [Route("[action]/{documentId}")]
+        public async Task<IActionResult> Update(Guid documentId, [FromBody]DocumentUpdateOptions request)
+        {
+            var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
+
+            try
+            {
+                var result = await SignatureServiceWrapper.GetService(env).UpdateDocumentAsync(documentId, request);
+                return Ok(result);
+            }
+            catch (IdfyException e)
+            {
+                return BadRequest(e);
+            }
+        }
+
         [HttpPost]
         [Route("{documentId}/[action]")]
         public async Task<IActionResult> Attachment(Guid documentId, [FromBody]AttachmentOptions request)
