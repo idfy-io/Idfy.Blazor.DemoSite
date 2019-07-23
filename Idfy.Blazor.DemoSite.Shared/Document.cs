@@ -20,12 +20,11 @@ namespace Idfy.Blazor.DemoSite.Shared
         public new bool GetSocialSecurityNumber { get; set; }
     }
 
-    public class DemoFile : DataToSign
+    public class DemoFile : Attachment
     {
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public new bool ConvertToPDF { get; set; }
-        public AttachmentType Type { get; set; }
+        public new bool ConvertToPdf { get; set; }
+        public bool Done { get; set; }
+        public string Base64ContentStyleSheet { get; set; }
     }
     
 }

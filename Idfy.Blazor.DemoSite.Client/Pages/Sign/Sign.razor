@@ -1,8 +1,10 @@
 @page  "/sign"
-@using Idfy.Blazor.DemoSite.Shared
+@using Idfy.Blazor.DemoSite.Client.Components.Buttons;
 @using Cloudcrate.AspNetCore.Blazor.Browser.Storage;
 @using Services;
+@using Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs;
 @inject DocumentService DocumentService
+@inject EnvironmentService EnvironmentService
 @inject IUriHelper UriHelper
 @inject HttpClient Http
 @inject LocalStorage Storage
@@ -16,16 +18,19 @@
         <div id="create-doc-container" Class="app-container app-padding">
             <MatTabGroup>
                 <MatTab Label="General">
-                    <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.General></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.General>
+                    <General></General>
                 </MatTab>
                 <MatTab Label="Files">
-                    <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Files></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Files>
+                    <Files></Files>
                 </MatTab>
                 <MatTab Label="Signers">
-                    <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signers></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signers>
+                    <Signers OnExecuteWithErrorHandler="@(t =>  ExecuteWithErrorHandling(async() => await t ))"></Signers>
                 </MatTab>
                 <MatTab Label="Advanced">
-                    <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Advanced></Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Advanced>
+                    <Advanced></Advanced>
+                </MatTab>
+                <MatTab Label="Notifications">
+                    <Notifications></Notifications>
                 </MatTab>
             </MatTabGroup>
 
@@ -33,18 +38,14 @@
             @if (DocumentService.Document?.DocumentId != null && !DocumentService.Document.DocumentId.Equals(Guid.Empty))
             {
                 <p>Currently viewing document with Id: @DocumentService.Document.DocumentId</p>
-                <MatThemeProvider Theme="@successTheme">
-                    <MatButton Raised="true" Icon="refresh" OnClick="args => Refresh(args)">Refresh</MatButton>
-                </MatThemeProvider>
-                <MatThemeProvider >
-                    <MatButton Raised="true" Icon="clear" OnClick="Clear">Clear</MatButton>
-                </MatThemeProvider>
+
+                <SuccessButton Icon="refresh" OnClick="args => Refresh(args)">Refresh</SuccessButton>
+
+                <MatButton Raised="true" Icon="clear" OnClick="Clear">Clear</MatButton>
             }
             else
             {
-                <MatThemeProvider Theme="@successTheme">
-                    <MatButton Class="full-width" Raised="true" Icon="pets" OnClick="CreateDocument" TrailingIcon="pets">Create Document</MatButton>
-                </MatThemeProvider>
+                <SuccessButton Class="full-width" Icon="pets" OnClick="CreateDocument" TrailingIcon="pets">Create Document</SuccessButton>
             }
 
             <MatDialog @bind-IsOpen="@dialogIsOpen">
@@ -63,16 +64,6 @@
 }
 
 
-@functions
-        {
-
-    MatTheme successTheme = new MatTheme()
-    {
-        Primary = MatThemeColors.Green._500.Value,
-        Secondary = MatThemeColors.Green._500.Value
-    };
-}
-
 @code {
     bool loaded = true;
     bool dialogIsOpen = false;
@@ -81,10 +72,14 @@
     protected override async Task OnInitAsync()
     {
         var currentDoc = Storage["document"];
+        var currentEnv = Storage["env"];
+
+        if (!string.IsNullOrWhiteSpace(currentEnv))
+            EnvironmentService.CurrentEnvironment = currentEnv;
 
         if (!string.IsNullOrWhiteSpace(currentDoc))
         {
-            await this.Refresh(null, Guid.Parse(currentDoc));
+            await this.Refresh(null, Guid.Parse(currentDoc), true);
         }
 
     }
@@ -99,19 +94,19 @@
         await ExecuteWithErrorHandling(async () =>
         {
             loaded = false;
-            await Task.Delay(1000); //Just a temp workaround to reset view
+            await Task.Delay(500); //Just a temp workaround to reset view
             Storage.Clear();
             DocumentService.Init();
             loaded = true;
         });
     }
 
-    protected async Task Refresh(UIMouseEventArgs args, Guid? documentId = null)
+    protected async Task Refresh(UIMouseEventArgs args, Guid? documentId = null, bool clearCacheOnError = false)
     {
         await ExecuteWithErrorHandling(async () =>
         {
             await DocumentService.GetDocument(UriHelper.GetBaseUri(), documentId);
-        });
+        }, clearCacheOnError);
     }
 
     protected async Task CreateDocument(UIMouseEventArgs args)
@@ -121,14 +116,16 @@
             var result = await this.DocumentService.CreateDocument(UriHelper.GetBaseUri());
             DocumentService.Document = result;
             Storage["document"] = result.DocumentId.ToString();
+            Storage["env"] = EnvironmentService.CurrentEnvironment;
         });
 
     }
 
-    protected async Task ExecuteWithErrorHandling(Func<Task> func)
+    protected async Task ExecuteWithErrorHandling(Func<Task> func, bool clearCacheOnError = false)
     {
         try
         {
+            this.error = "";
             loaded = false;
             await func.Invoke();
         }
@@ -141,12 +138,17 @@
         }
         catch (Exception e)
         {
-            this.error = e.Message + "\n\n" + Newtonsoft.Json.JsonConvert.SerializeObject(e);
+            this.error = e.Message;
             this.dialogIsOpen = true;
         }
         finally
         {
             loaded = true;
+        }
+
+        if(!string.IsNullOrWhiteSpace(this.error) && clearCacheOnError)
+        {
+            Storage.Clear();
         }
 
     }

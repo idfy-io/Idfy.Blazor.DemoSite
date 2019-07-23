@@ -1,4 +1,5 @@
-﻿using Idfy.Signature;
+﻿using Idfy.Blazor.DemoSite.Server.Clients;
+using Idfy.Signature;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -9,25 +10,22 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
     [Route("api/[controller]")]
     public class SignController : Controller
     {
-        private readonly AppSettings appSettings;
+        public SignatureServiceWrapper SignatureServiceWrapper { get; }
 
-        public ISignatureService SignatureService { get; }
-
-        public SignController(ISignatureService signatureService, AppSettings appSettings)
+        public SignController(SignatureServiceWrapper signatureServiceWrapper)
         {
-            SignatureService = signatureService;
-            this.appSettings = appSettings;
+            SignatureServiceWrapper = signatureServiceWrapper;
         }
 
         [HttpPost]
         [Route("[action]")]
         public async Task <IActionResult> Create([FromBody]DocumentCreateOptions request)
         {
-            SetEnvironment(Request.Headers);
+            var env =SignatureServiceWrapper.SetEnvironment(Request.Headers);
 
             try
             {
-                var result = await SignatureService.CreateDocumentAsync(request);
+                var result = await SignatureServiceWrapper.GetService(env).CreateDocumentAsync(request);
                 return Ok(result);
             }
             catch (IdfyException e)
@@ -36,17 +34,49 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
             }
         }
 
-       
+        [HttpPost]
+        [Route("{documentId}/[action]")]
+        public async Task<IActionResult> Attachment(Guid documentId, [FromBody]AttachmentOptions request)
+        {
+            var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
+
+            try
+            {
+                var result = await SignatureServiceWrapper.GetService(env).CreateAttachmentAsync(documentId, request);
+                return Ok(result);
+            }
+            catch (IdfyException e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+        [HttpGet]
+        [Route("{documentId}/[action]/{attachmentId}")]
+        public async Task<IActionResult> Attachment(Guid documentId, Guid attachmentId)
+        {
+            var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
+
+            try
+            {
+                var result = await SignatureServiceWrapper.GetService(env).GetAttachmentAsync(documentId, attachmentId);
+                return Ok(result);
+            }
+            catch (IdfyException e)
+            {
+                return BadRequest(e);
+            }
+        }
 
         [HttpGet]
         [Route("{documentId}")]
         public async Task<IActionResult> Get(Guid documentId)
         {
-            SetEnvironment(Request.Headers);
+            var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
 
             try
             {
-                var result = await SignatureService.GetDocumentAsync(documentId);
+                var result = await SignatureServiceWrapper.GetService(env).GetDocumentAsync(documentId);
                 return Ok(result);
             }
             catch (IdfyException e)
@@ -57,14 +87,14 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
 
         [HttpGet]
         [Route("{documentId}/[action]")]
-        public async Task<IActionResult> Files(Guid documentId, [FromQuery] FileFormat fileFormat, [FromQuery] Guid? documentItemId = null)
+        public async Task<IActionResult> Files(Guid documentId, [FromQuery] FileFormat fileFormat, [FromQuery] string env, [FromQuery] Guid? documentItemId = null)
         {
-            SetEnvironment(Request.Headers);
+            env = SignatureServiceWrapper.SetEnvironment(Request.Headers, env);
 
             try
             {
-                var result = documentItemId == null ? await SignatureService.GetFileAsync(documentId, fileFormat)
-                    : await SignatureService.GetAttachmentFileAsync(documentId, documentItemId.Value, fileFormat);
+                var result = documentItemId == null ? await SignatureServiceWrapper.GetService(env).GetFileAsync(documentId, fileFormat)
+                    : await SignatureServiceWrapper.GetService(env).GetAttachmentFileAsync(documentId, documentItemId.Value, fileFormat);
                 return Ok(result);
             }
             catch (IdfyException e)
@@ -73,29 +103,22 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
             }
         }
 
-        private void SetEnvironment(IHeaderDictionary headers)
+        [HttpDelete]
+        [Route("{documentId}/[action]/{signerId}")]
+        public async Task<IActionResult> DeleteSignature(Guid documentId, Guid signerId)
         {
-            string environmentName = "Test";
-            if (headers.TryGetValue("Idfy-Environment", out var result) && result.Count > 0)
+            try
             {
-                environmentName = result.ToArray()[0];
+                var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
+                await this.SignatureServiceWrapper.GetFeaturesApiClient(env).Delete($"{IdfyConfiguration.BaseUrl}/signature/documents/{documentId}/signers/{signerId}/signature");
+                return NoContent();
             }
-
-            var environment = appSettings.Environments[environmentName];
-
-            if (!string.IsNullOrWhiteSpace(environment.ApiBaseUrl))
+            catch (IdfyException e)
             {
-                IdfyConfiguration.BaseUrl = environment.ApiBaseUrl;
+                return BadRequest(e);
             }
-            if (!string.IsNullOrWhiteSpace(environment.OauthBaseUrl))
-            {
-                IdfyConfiguration.OAuthBaseUrl = environment.OauthBaseUrl;
-            }
-
-            IdfyConfiguration.SetClientCredentials(
-                environment.ClientId,
-                environment.ClientSecret,
-                new[] { OAuthScope.DocumentRead, OAuthScope.DocumentWrite, OAuthScope.DocumentFile });
         }
+
+      
     }
 }

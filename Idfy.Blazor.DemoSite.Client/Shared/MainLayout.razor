@@ -4,7 +4,7 @@
 @inject IUriHelper UriHelper;
 
 
-<MatThemeProvider Theme="@theme">
+<MatThemeProvider Theme="@Static.Themes.BlueIsh">
     <MatAppBarContainer>
         <MatAppBar Fixed="true">
             <MatAppBarRow>
@@ -14,21 +14,25 @@
                 </MatAppBarSection>
                 <MatAppBarSection Align="@MatAppBarSectionAlign.End">
                     <div>
-                        <MatSelect ValueChanged="UpdateEnv" Label="" Outlined="true">
-                            @foreach (var env in EnvironmentService.Environments)
-                            {
-                                <MatOption Value="@env">@env</MatOption>
-                            }
-                        </MatSelect>
+                        <MatButton Icon="settings" Unelevated="true" Label="@EnvironmentService.CurrentEnvironment" OnClick="@OnClick" RefBack="@buttonForwardRef"></MatButton>
+                        <MatMenu @ref="Menu" TargetForwardRef="@buttonForwardRef">
+                            <MatList>
+                                @foreach (var env in EnvironmentService.Environments)
+                                {
+                                    <MatListItem @OnClick="@(e => @UpdateEnv(env))">@env</MatListItem>
+                                }
+                            </MatList>
+                        </MatMenu>
+
                     </div>
-                    
+
                 </MatAppBarSection>
             </MatAppBarRow>
         </MatAppBar>
 
         <MatAppBarContent>
             <div class="main mat">
-                <div class="content px-4 app">
+                <div class="content app">
                     @Body
                 </div>
             </div>
@@ -36,17 +40,16 @@
     </MatAppBarContainer>
 </MatThemeProvider>
 
-
-
-@functions {
-    MatTheme theme = new MatTheme()
-    {
-        Primary = MatThemeColors.Orange._500.Value,
-        Secondary = MatThemeColors.BlueGrey._500.Value
-    };
-}
-
 @code {
+    ForwardRef buttonForwardRef = new ForwardRef();
+    BaseMatMenu Menu;
+
+    public void OnClick(UIMouseEventArgs e)
+    {
+        this.Menu.OpenAsync();
+    }
+
+
     protected override async Task OnInitAsync()
     {
         await EnvironmentService.Initialize(UriHelper.GetBaseUri());
@@ -56,6 +59,8 @@
     {
         EnvironmentService.CurrentEnvironment = value;
     }
+
+
 }
 
 

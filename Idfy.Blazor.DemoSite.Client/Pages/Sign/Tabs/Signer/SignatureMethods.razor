@@ -1,0 +1,65 @@
+@using Idfy.Blazor.DemoSite.Shared;
+@using Idfy.Signature;
+
+<h3 class="app-title">Signature methods</h3>
+
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+            <MatSelect Class="full-width no-margin" Label="Select mechanism" Value="@Signer.SignatureType.Mechanism.ToString()" ValueChanged="@((value) => SetMechanism(Signer, value))" Outlined="true">
+                @foreach (SignatureMechanism mechanism in Enum.GetValues(typeof(SignatureMechanism)))
+                {
+                    <MatOption Value="@mechanism.ToString()">@mechanism.ToString()</MatOption>
+                }
+            </MatSelect>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                <MatAutocomplete Class="full-width no-margin" Icon="fingerprint" Collection="@SignatureMethodList" ShowClearButton="true"
+                                 ItemType="SignatureMethod" Label="Specify signature methods" StringValue="@NewValue" Outlined="true" ValueChanged="@((value) => AddSignatureMethod(value))"></MatAutocomplete>
+
+            </div>
+            @if (Signer.SignatureType.SignatureMethods != null && Signer.SignatureType.SignatureMethods.Any())
+            {
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                    <MatChipSet>
+                        @foreach (var chip in Signer.SignatureType.SignatureMethods)
+                        {
+                            <MatChip LeadingIcon="fingerprint" Label="@chip.ToString()"></MatChip>
+                        }
+                    </MatChipSet>
+                </div>
+            }
+        </div>
+
+</div>
+
+@code {
+    private string NewValue;
+    private SignatureMethod[] SignatureMethodList = (SignatureMethod[])Enum.GetValues(typeof(SignatureMethod));
+
+    [Parameter]
+    protected DemoSigner Signer { get; set; }
+
+    protected void SetMechanism(DemoSigner signer, string value)
+    {
+        SignatureMechanism mechanism;
+        if (Enum.TryParse(value, out mechanism))
+        {
+            signer.SignatureType.Mechanism = mechanism;
+        }
+    }
+
+    protected void AddSignatureMethod(SignatureMethod method)
+    {
+        if (Signer.SignatureType.SignatureMethods == null)
+            Signer.SignatureType.SignatureMethods = new List<SignatureMethod>();
+
+        Signer.SignatureType.SignatureMethods.Add(method);
+        NewValue = "";
+    }
+
+    private void DeleteSignatureMethod(SignatureMethod method)
+    {
+       Signer.SignatureType.SignatureMethods.Remove(method);
+    }
+}

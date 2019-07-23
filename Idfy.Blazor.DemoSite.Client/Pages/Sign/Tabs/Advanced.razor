@@ -2,58 +2,78 @@
 @using Services;
 @inject DocumentService DocumentService;
 
-    <div class="app-padding">
-        <MatSlideToggle @bind-Checked="@Document.Advanced.GetSocialSecurityNumber"></MatSlideToggle> <span>Get soc sec</span>
-        <p>Attachments: @Document.Advanced.Attachments</p>
-        <p>Tags</p>
-        <MatChipSet>
-            @foreach (var tag in Document.Advanced.Tags)
-            {
-                <MatChip Label="@tag"></MatChip>
-            }
-        </MatChipSet>
-        <MatTextField @bind-Value="@Document.Advanced.CreatedByApplication" Label="Created by" Outlined="true"></MatTextField>
-        <MatTextField @bind-Value="@Document.Advanced.DepartmentId" Label="Department Id" Outlined="true"></MatTextField>
+<div class="app-padding">
+    <div class="mat-layout-grid">
+        <div class="mat-layout-grid-inner">
 
-        <br />
-        <MatNumericUpDownField Label="Required signatures"
-                               ValueChanged="@SetRequiredSignatures"
-                               DecimalPlaces=0
-                               Outlined="true"
-                               Minimum=0 Maximum=null>
-        </MatNumericUpDownField>
-        <br />
-        <MatNumericUpDownField Label="Delete after hours"
-                               ValueChanged="@SetDAH"
-                               Value="1"
-                               DecimalPlaces=0
-                               Outlined="true"
-                               Minimum=1 Maximum=null>
-        </MatNumericUpDownField>
-        <br />
-
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                <MatTextField @bind-Value="@Document.Advanced.CreatedByApplication" Label="Created by" FullWidth="true"></MatTextField>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                <MatTextField @bind-Value="@Document.Advanced.DepartmentId" Label="Department Id" FullWidth="true"></MatTextField>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                <MatNumericUpDownField Label="Required signatures"
+                                       @bind-Value ="@RequiredSignatures"
+                                       DecimalPlaces=0
+                                       Outlined="true"
+                                       Minimum=0 Maximum=null>
+                </MatNumericUpDownField>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                <MatSlideToggle @bind-Checked="@Document.Advanced.GetSocialSecurityNumber"></MatSlideToggle> <span>Get soc sec</span>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                <Idfy.Blazor.DemoSite.Client.Components.DynamicChipList ChipList="Document.Advanced.Tags"></Idfy.Blazor.DemoSite.Client.Components.DynamicChipList>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                <h3 class="app-title">Lifetime</h3>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                <MatDatePicker @bind-Value="@Document.Advanced.TimeToLive.Deadline"></MatDatePicker>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                <MatNumericUpDownField Label="Delete after hours"
+                                       @bind-Value="DeleteAfterHours"
+                                       DecimalPlaces=0
+                                       Outlined="true"
+                                       Minimum=1 Maximum=null>
+                </MatNumericUpDownField>
+            </div>
+        </div>
     </div>
+
+</div>
 
 @code {
     protected DemoDocument Document;
+
     protected override async Task OnInitAsync()
     {
         Document = DocumentService.Document;
     }
 
-    protected void SetRequiredSignatures(decimal? value)
+    private decimal? RequiredSignatures
     {
-        if (value != null)
+        get
         {
-            Document.Advanced.RequiredSignatures = (int)value.Value;
+            return (decimal)Document.Advanced.RequiredSignatures;
+        }
+        set
+        {
+            Document.Advanced.RequiredSignatures = (int) (value ?? 0);
         }
     }
 
-    protected void SetDAH(decimal? value)
+    private decimal? DeleteAfterHours
     {
-        if (value != null)
+        get
         {
-            Document.Advanced.TimeToLive.DeleteAfterHours = (int)value.Value;
+            return (decimal?)Document.Advanced.TimeToLive.DeleteAfterHours;
+        }
+        set
+        {
+            Document.Advanced.TimeToLive.DeleteAfterHours = (int?) value;
         }
     }
 }

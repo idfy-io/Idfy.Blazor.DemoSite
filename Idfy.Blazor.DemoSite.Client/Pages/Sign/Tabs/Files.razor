@@ -1,37 +1,43 @@
 @using Idfy.Blazor.DemoSite.Shared
 @using Services;
 @inject DocumentService DocumentService;
+@inject EnvironmentService EnvironmentService;
 @inject IJSRuntime JsRuntime;
 @inject IUriHelper UriHelper
 
 
 
 <div class="app-padding">
-
     <MatAccordion Multi="true">
         @foreach (var doc in DocumentService.Files)
         {
             <MatExpansionPanel>
                 <MatExpansionPanelSummary>
-                    <MatExpansionPanelHeader>@doc.Title</MatExpansionPanelHeader>
+                    <MatExpansionPanelHeader> @doc.Title</MatExpansionPanelHeader>
                     <MatExpansionPanelSubHeader>
-                        Filetype: @doc.Type
+                        <MatIcon Icon="@(doc.Type == AttachmentType.Sign ? "create": "attach_file")"></MatIcon>
                     </MatExpansionPanelSubHeader>
                 </MatExpansionPanelSummary>
-
 
                 <MatExpansionPanelDetails>
                     <MatTextField @bind-Value="@doc.Title" Label="Title" FullWidth="true"></MatTextField>
                     <MatTextField @bind-Value="@doc.FileName" Label="Filename" FullWidth="true"></MatTextField>
-                    <br /><br />
                     <MatTextField @bind-Value="@doc.Description" Label="Description" TextArea="true" FullWidth="true"></MatTextField>
-                    <br /><br />
-                    <MatSlideToggle @bind-Checked="@doc.ConvertToPDF"></MatSlideToggle> <span>Convert to pdf</span>
+                    <MatSelect Label="Filetype" Value="@doc.Type.ToString()" ValueChanged="@((value) => SetFileType(@doc, value))" Outlined="true">
+                        @foreach (AttachmentType attachmentType in Enum.GetValues(typeof(AttachmentType)))
+                        {
+                            <MatOption Value="@attachmentType.ToString()">@attachmentType.ToString()</MatOption>
+                        }
+                    </MatSelect>
+                    <MatSlideToggle @bind-Checked="@doc.ConvertToPdf"></MatSlideToggle> <span>Convert to pdf</span>
                 </MatExpansionPanelDetails>
             </MatExpansionPanel>
         }
     </MatAccordion>
-    <MatButton Class="full-width btn-margin" OnClick="@AddFile">Add new</MatButton>
+    @if (DocumentService.Document.Status?.DocumentStatus == null)
+    {
+        <MatButton Class="full-width btn-margin" OnClick="@AddFile">Add new</MatButton>
+    }
 
     @if (DocumentService.Document?.Status?.CompletedPackages != null)
     {
@@ -43,34 +49,39 @@
         }
     }
 
+    @if (DocumentService.Document?.Status?.AttachmentPackages != null)
+    {
+        @foreach (var attachment in DocumentService.Document.Status.AttachmentPackages)
+        {
+            var matchedFile = DocumentService.Files.FirstOrDefault(f => f.Id?.ToString() == attachment.Key);
+            <h3 class="app-title">@matchedFile.Title - Download files</h3>
+            <MatButton OnClick="@(args => Download(args, Idfy.Signature.FileFormat.Unsigned, Guid.Parse(attachment.Key)))" Class="btn-margin">@Idfy.Signature.FileFormat.Unsigned</MatButton>
+            @foreach (var package in attachment.Value)
+            {
+                <MatButton OnClick="@(args => Download(args, package, Guid.Parse(attachment.Key)))" Class="btn-margin">@package</MatButton>
+            }
+        }
+
+    }
 </div>
 
 
 
 @code {
 
-
-    protected override async Task OnInitAsync()
-    {
-        DocumentService.UpdateFiles();
-    }
-
     protected void AddFile(UIMouseEventArgs evt)
     {
         DocumentService.Files.Add(DocumentService.DefaultTxtFile);
-        DocumentService.UpdateFiles();
     }
 
     protected async Task Download(UIMouseEventArgs evt, Idfy.Signature.FileFormat fileFormat, Guid? documentItemId = null)
     {
         try
         {
-            var url = $"{UriHelper.GetBaseUri()}api/Sign/{DocumentService.Document.DocumentId}/files?fileFormat={fileFormat}";
+            var url = $"{UriHelper.GetBaseUri()}api/Sign/{DocumentService.Document.DocumentId}/files?fileFormat={fileFormat}&env={EnvironmentService.CurrentEnvironment}";
 
             if (documentItemId != null)
                 url += $"&documentItemId={documentItemId}";
-
-            Console.WriteLine(url);
 
             await JsRuntime.InvokeAsync<object>("open", url, "_blank");
         }
@@ -81,5 +92,12 @@
 
     }
 
-
+    protected void SetFileType(DemoFile file, string value)
+    {
+        AttachmentType type;
+        if (Enum.TryParse(value, out type))
+        {
+            file.Type = type;
+        }
+    }
 }

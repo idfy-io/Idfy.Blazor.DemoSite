@@ -1,0 +1,20 @@
+<MatThemeProvider Theme="Static.Themes.Success">
+    <MatButton Class="@Class" OnClick="@OnClick" Raised="true" Icon="@Icon" TrailingIcon="@TrailingIcon">@ChildContent</MatButton>
+</MatThemeProvider>
+
+@code {
+    [Parameter]
+    private RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    private EventCallback<UIMouseEventArgs> OnClick { get; set; }
+
+    [Parameter]
+    private string Class { get; set; }
+
+    [Parameter]
+    private string Icon { get; set; }
+
+    [Parameter]
+    private string TrailingIcon { get; set; }
+}

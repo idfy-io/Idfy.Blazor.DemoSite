@@ -1,0 +1,35 @@
+
+<p>Tags</p>
+<MatTextField Label="Add new" Outlined="true" OnFocusOut="@((args) => @AddChip())" @bind-Value="@NewValue"></MatTextField>
+<MatChipSet>
+    @if (ChipList != null)
+    {
+        @foreach (var chip in ChipList)
+        {
+            <MatChip Label="@chip"></MatChip>
+        }
+    }
+</MatChipSet>
+
+
+@code {
+    private string NewValue;
+
+    [Parameter]
+    private string Title { get; set; }
+
+    [Parameter]
+    private List<string> ChipList { get; set; }
+
+    private void AddChip()
+    {
+        if (string.IsNullOrWhiteSpace(NewValue))
+            return;
+
+        if (ChipList != null)
+        {
+            ChipList.Add(NewValue);
+        }
+        NewValue = "";
+    }
+}

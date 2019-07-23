@@ -1,0 +1,163 @@
+@using Services;
+@using Idfy.Blazor.DemoSite.Shared;
+@using Idfy.Signature;
+@inject DocumentService DocumentService;
+
+
+
+<div class="app-padding">
+    <div class="mat-layout-grid">
+        <div class="mat-layout-grid-inner">
+            @foreach (NotificationType type in Enum.GetValues(typeof(NotificationType)))
+            {
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <MatCard Class="notification-card">
+
+                        <h3 class="app-title">@type.ToString()</h3>
+                        <div class="mat-layout-grid">
+                            <div class="mat-layout-grid-inner">
+
+                                @foreach (var signer in Document.Signers)
+                                {
+                                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
+                                        @SignerName(signer)
+                                    </div>
+                                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
+                                        <MatSelect Label="Notification setting" Value="@GetNotificationSetting(signer, type).ToString()" ValueChanged="@((value) => SetNotificationSetting(signer, type, value))" Outlined="true">
+                                            @foreach (NotificationSetting setting in Enum.GetValues(typeof(NotificationSetting)))
+                                            {
+                                                <MatOption Value="@setting.ToString()">@setting.ToString()</MatOption>
+                                            }
+                                        </MatSelect>
+                                    </div>
+                                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
+                                        <MatIconButton Icon="sync" OnClick="@(args => Sync(GetNotificationSetting(signer, type)))"></MatIconButton>
+                                    </div>
+                                }
+
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12 top-border">
+                                    @if (type == NotificationType.Request)
+                                    {
+                                        <div class="app-padding">
+                                            <MatSlideToggle @bind-Checked="@IncludeOriginal" Label="Include original file"></MatSlideToggle>
+                                        </div>
+                                    }
+                                    else if (type == NotificationType.Reminder)
+                                    {
+                                        <MatTextField Outlined="true" Label="Cron schedule" @bind-Value="Document.Notification.Reminder.ChronSchedule"></MatTextField>
+                                        <MatNumericUpDownField Label="Max reminders" Outlined="true" Minimum="0" @bind-Value="MaxReminders"></MatNumericUpDownField>
+                                    }
+                                    else if (type == NotificationType.FinalReceipt)
+                                    {
+                                        <div class="app-padding">
+                                            <MatSlideToggle @bind-Checked="@IncludeSigned" Label="Include signed file"></MatSlideToggle>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </MatCard>
+
+                </div>
+
+
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+
+    private bool IncludeOriginal
+    {
+        get { return Document.Notification.SignRequest.IncludeOriginalFile.GetValueOrDefault(false); }
+        set { Document.Notification.SignRequest.IncludeOriginalFile = value; }
+    }
+
+    private bool IncludeSigned
+    {
+        get { return Document.Notification.FinalReceipt.IncludeSignedFile.GetValueOrDefault(false); }
+        set { Document.Notification.FinalReceipt.IncludeSignedFile = value; }
+    }
+
+    private decimal? MaxReminders
+    {
+        get { return Document.Notification.Reminder.MaxReminders; }
+        set { Document.Notification.Reminder.MaxReminders = (int)value; }
+    }
+
+    private enum NotificationType
+    {
+        Request,
+        Reminder,
+        SignatureReceipt,
+        FinalReceipt,
+        Canceled,
+        Expired
+    }
+
+    private DemoDocument Document;
+
+    protected override async Task OnInitAsync()
+    {
+        Document = DocumentService.Document;
+
+        if (Document.Notification == null)
+        {
+            Document.Notification = new Notification()
+            {
+                SignRequest = new SignRequest(),
+                CanceledReceipt = new CanceledReceipt(),
+                ExpiredReceipt = new ExpiredReceipt(),
+                FinalReceipt = new FinalReceipt(),
+                Reminder = new Reminder()
+                {
+                    ChronSchedule = "0 0 12 1/3 * ? *",
+                    MaxReminders = 3
+                },
+                SignatureReceipt = new SignatureReceipt()
+            };
+        }
+    }
+
+    private string SignerName(DemoSigner signer)
+    {
+        var name = signer.SignerInfo.FirstName + " " + signer.SignerInfo.LastName;
+
+        if (string.IsNullOrWhiteSpace(name))
+            name = "Signer with no name";
+        return name;
+    }
+
+
+    private void SetNotificationSetting(DemoSigner signer, NotificationType type, string value)
+    {
+        NotificationSetting mechanism;
+        if (Enum.TryParse(value, out mechanism))
+        {
+            var propertyInfo = signer.Notifications.Setup.GetType().GetProperty(type.ToString());
+            propertyInfo.SetValue(signer.Notifications.Setup, mechanism);
+        }
+    }
+
+    private NotificationSetting GetNotificationSetting(DemoSigner signer, NotificationType type)
+    {
+        var propertyInfo = signer.Notifications.Setup.GetType().GetProperty(type.ToString());
+        return (NotificationSetting)propertyInfo.GetValue(signer.Notifications.Setup);
+    }
+
+    private void Sync(NotificationSetting setting)
+    {
+        foreach (var signer in Document.Signers)
+        {
+            signer.Notifications.Setup.Reminder =
+            signer.Notifications.Setup.Request =
+            signer.Notifications.Setup.FinalReceipt =
+            signer.Notifications.Setup.SignatureReceipt =
+            signer.Notifications.Setup.Canceled =
+            signer.Notifications.Setup.Expired = setting;
+        }
+    }
+}

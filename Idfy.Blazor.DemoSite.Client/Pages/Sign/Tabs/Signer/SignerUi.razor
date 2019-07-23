@@ -1,0 +1,57 @@
+@using Idfy.Blazor.DemoSite.Shared;
+@using Idfy.Signature;
+
+<h3 class="app-title">UI</h3>
+
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+            <MatAutocomplete Icon="language" Collection="@languages" ShowClearButton="true" Outlined="true"
+                             ItemType="Language" Label="Language" StringValue="@Signer.Ui.Language.ToString()" ValueChanged="@((value) => Set(value))"></MatAutocomplete>
+        </div>
+
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+            <MatAutocomplete Icon="hourglass_empty" Collection="@spinners" ShowClearButton="true" Outlined="true"
+                             ItemType="Spinner" Label="Spinner" StringValue="@Signer.Ui.Styling.Spinner.ToString()" ValueChanged="@((value) => Set(value))"></MatAutocomplete>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+            <MatAutocomplete Icon="color_lense" Collection="@themes" ShowClearButton="true" Outlined="true"
+                             ItemType="ColorTheme" Label="Color theme" StringValue="@Signer.Ui.Styling.ColorTheme.ToString()" ValueChanged="@((value) => Set(value))"></MatAutocomplete>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+            <MatAutocomplete Icon="wb_sunny" Collection="@themeModes" ShowClearButton="true" Outlined="true"
+                             ItemType="ThemeMode" Label="Theme mode" StringValue="@Signer.Ui.Styling.ThemeMode.ToString()" ValueChanged="@((value) => Set(value))"></MatAutocomplete>
+        </div>
+    </div>
+</div>
+
+@code {
+    Spinner[] spinners = (Spinner[])Enum.GetValues(typeof(Spinner));
+    ColorTheme[] themes = (ColorTheme[])Enum.GetValues(typeof(ColorTheme));
+    ThemeMode[] themeModes = (ThemeMode[])Enum.GetValues(typeof(ThemeMode));
+    Language[] languages = (Language[])Enum.GetValues(typeof(Language));
+
+    [Parameter]
+    protected DemoSigner Signer { get; set; }
+
+    protected void Set(Spinner value)
+    {
+        Signer.Ui.Styling.Spinner = value;
+    }
+
+    protected void Set(ColorTheme value)
+    {
+        Signer.Ui.Styling.ColorTheme = value;
+    }
+
+    protected void Set(ThemeMode value)
+    {
+        Signer.Ui.Styling.ThemeMode = value;
+    }
+
+    protected void Set(Language value)
+    {
+        Signer.Ui.Language = value;
+    }
+
+}

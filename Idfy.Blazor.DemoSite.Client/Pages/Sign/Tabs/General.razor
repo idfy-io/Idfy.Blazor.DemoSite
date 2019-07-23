@@ -14,10 +14,10 @@
     <MatTextField @bind-Value="@Document.ExternalId" Label="External Id" Outlined="true"></MatTextField>
 
     <p>Contact Info</p>
-    <MatTextField @bind-Value="@Document.ContactDetails.Name" Label="Company name" Outlined="true"></MatTextField>
-    <MatTextField @bind-Value="@Document.ContactDetails.Phone" Label="Phone" Outlined="true"></MatTextField>
-    <MatTextField @bind-Value="@Document.ContactDetails.Email" Label="Email" Outlined="true"></MatTextField>
-    <MatTextField @bind-Value="@Document.ContactDetails.Url" Label="Url" Outlined="true"></MatTextField>
+    <MatTextField Icon="business" @bind-Value="@Document.ContactDetails.Name" Label="Company name" Outlined="true"></MatTextField>
+    <MatTextField Icon="local_phone" @bind-Value="@Document.ContactDetails.Phone" Label="Phone" Outlined="true"></MatTextField>
+    <MatTextField Icon="email" @bind-Value="@Document.ContactDetails.Email" Label="Email" Outlined="true"></MatTextField>
+    <MatTextField Icon="home" @bind-Value="@Document.ContactDetails.Url" Label="Url" Outlined="true"></MatTextField>
 
 </div>
 

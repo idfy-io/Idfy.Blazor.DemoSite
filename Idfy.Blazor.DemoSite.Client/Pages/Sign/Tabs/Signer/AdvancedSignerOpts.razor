@@ -1,0 +1,49 @@
+@using Idfy.Blazor.DemoSite.Shared;
+@using Idfy.Signature;
+
+
+<h3 class="app-title">Advanced</h3>
+
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+            <MatTextField Class="full-width no-margin" @bind-Value="@SignerData.ExternalSignerId" Label="External Id" Outlined="true"></MatTextField>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+            <MatNumericUpDownField Icon="format_list_numbered"
+                                   Label="Order"
+                                   ValueChanged="SetOrder"
+                                   DecimalPlaces=0
+                                   Outlined="true"
+                                   Minimum=0 Maximum=null
+                                   Class="full-width no-margin">
+            </MatNumericUpDownField>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+            <MatSlideToggle @bind-Checked="@SignerData.GetSocialSecurityNumber"></MatSlideToggle> <span>Get soc sec</span>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+            <MatSlideToggle @bind-Checked="@SignerData.Required"></MatSlideToggle> <span>Required signature</span>
+        </div>
+
+
+    </div>
+</div>
+
+
+
+
+@code {
+
+    [Parameter]
+    protected DemoSigner SignerData { get; set; }
+
+    private void SetOrder(decimal? value)
+    {
+        if (value != null)
+        {
+            SignerData.Order = (int)value.Value;
+        }
+    }
+
+}

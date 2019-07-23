@@ -1,0 +1,50 @@
+@using Idfy.Blazor.DemoSite.Shared;
+@using Idfy.Signature;
+
+
+<h3 class="app-title">Redirect</h3>
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+            <MatSelect Label="Select redirect mode" Value="@Signer.RedirectSettings.RedirectMode.ToString()" ValueChanged="@((value) => SetRedirectMode(Signer, value))" Outlined="true">
+                @foreach (RedirectMode redirectMode in Enum.GetValues(typeof(RedirectMode)))
+                {
+                <MatOption Value="@redirectMode.ToString()">@redirectMode.ToString()</MatOption>
+                }
+            </MatSelect>
+        </div>
+        @if (!new[] { RedirectMode.DonotRedirect, RedirectMode.IframeWithWebmessaging }.Contains(Signer.RedirectSettings.RedirectMode))
+        {
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+            <MatTextField @bind-Value="@Signer.RedirectSettings.Success" Label="Success" FullWidth="true" Outlined="true"></MatTextField>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+
+            <MatTextField @bind-Value="@Signer.RedirectSettings.Error" Label="Error" FullWidth="true" Outlined="true"></MatTextField>
+        </div>
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+
+            <MatTextField @bind-Value="@Signer.RedirectSettings.Cancel" Label="Cancel" FullWidth="true" Outlined="true"></MatTextField>
+        </div>
+        }
+    </div>
+</div>
+
+
+
+
+@code {
+
+    [Parameter]
+    protected DemoSigner Signer { get; set; }
+
+    protected void SetRedirectMode(DemoSigner signer, string value)
+    {
+        RedirectMode redirectMode;
+        if (Enum.TryParse(value, out redirectMode))
+        {
+            signer.RedirectSettings.RedirectMode = redirectMode;
+        }
+    }
+
+}
