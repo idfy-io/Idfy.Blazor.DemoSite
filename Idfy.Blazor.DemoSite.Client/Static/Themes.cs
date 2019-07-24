@@ -2,6 +2,7 @@
 
 namespace Idfy.Blazor.DemoSite.Client.Static
 {
+
     public static class Themes
     {
         public static MatTheme BlueIsh => new MatTheme()

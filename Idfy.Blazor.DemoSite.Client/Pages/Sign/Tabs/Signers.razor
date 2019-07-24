@@ -14,7 +14,7 @@
         }
     </MatAccordion>
 
-    @if (DocumentService.Document.Status?.DocumentStatus == null)
+    @if (DocumentService.Document.Status?.DocumentStatus != Signature.DocumentStatus.Signed)
     {
         <MatButton Class="full-width btn-margin" OnClick="@AddSigner" TrailingIcon="tag_faces">Add new</MatButton>
     }
@@ -32,9 +32,9 @@
         SignerList = DocumentService.Document.Signers;
     }
 
-    protected void AddSigner(UIMouseEventArgs e)
+    protected async Task AddSigner(UIMouseEventArgs e)
     {
-        DocumentService.AddSigner();
+        await OnExecuteWithErrorHandler.InvokeAsync( DocumentService.AddSigner());
     }
 
 

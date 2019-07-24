@@ -100,6 +100,10 @@ app {
     color: red;
 }
 
+.app-expansion-panel {
+    max-height: 2000px !important;
+}
+
 .large-dialog {
     width: 100vw !important;
 }
@@ -115,6 +119,7 @@ app {
 .notification-card {
     padding-left: 10px;
     height: 100%;
+    background-color: #f8f8f8 !important;
 }
 
 .top-border {

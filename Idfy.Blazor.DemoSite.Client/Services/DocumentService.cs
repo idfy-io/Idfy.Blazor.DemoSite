@@ -17,13 +17,15 @@ namespace Idfy.Blazor.DemoSite.Client.Services
 
         private readonly EnvironmentService environmentService;
         private HttpClient httpClient;
+        private readonly IUriHelper uriHelper;
         private bool uploadAttachments;
 
 
-        public DocumentService(EnvironmentService environmentService, HttpClient httpClient)
+        public DocumentService(EnvironmentService environmentService, HttpClient httpClient, IUriHelper uriHelper)
         {
             this.environmentService = environmentService;
             this.httpClient = httpClient;
+            this.uriHelper = uriHelper;
             Init();
         }
 
@@ -61,12 +63,12 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 ExternalId = System.Guid.NewGuid().ToString(),
                 Signers = new System.Collections.Generic.List<DemoSigner>()
             };
-            AddSigner("Serious", "Signer");
+            AddSigner("Serious", "Signer").GetAwaiter().GetResult();
         }
 
-        public void AddSigner(string firstName = null, string lastName = null)
+        public async Task AddSigner(string firstName = null, string lastName = null)
         {
-            Document.Signers.Add(new DemoSigner()
+            var signer = new DemoSigner()
             {
                 SignerInfo = new SignerInfo()
                 {
@@ -103,7 +105,24 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                     },
                     MergeFields = new Dictionary<string, string>()
                 }
-            });
+            };
+
+            if(Document?.Status?.DocumentStatus != null)
+            {
+                signer = await UploadNewSigner(signer);
+            }
+
+            Document.Signers.Add(signer);
+        }
+
+        private async Task<DemoSigner> UploadNewSigner(DemoSigner signer)
+        {
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(signer);
+            var result = await httpClient.PostAsync($"{uriHelper.GetBaseUri()}api/Sign/{Document.DocumentId}/AddSigner", new StringContent(json, Encoding.UTF8, "application/json"));
+            var resultAsString = await result.Content.ReadAsStringAsync();
+
+            VerifySuccess(result, resultAsString);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<DemoSigner>(resultAsString);
         }
 
         public DemoSite.Shared.DemoFile DefaultTxtFile => new DemoSite.Shared.DemoFile()
@@ -119,7 +138,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
         };
 
 
-        public void UpdateFiles()
+        public void UpdateFiles(bool onlyUpdateMainFile = false)
         {
             uploadAttachments = false;
             var mainDocPopulated = false;
@@ -128,17 +147,10 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             {
                 if (file.Type == AttachmentType.Sign && !mainDocPopulated)
                 {
-                    Document.Title = file.Title;
-                    Document.Description = file.Description;
-                    Document.DataToSign = new DataToSign()
-                    {
-                        Base64Content = file.Data,
-                        ConvertToPDF = file.ConvertToPdf,
-                        FileName = file.FileName,
-                        Base64ContentStyleSheet = file.Base64ContentStyleSheet
-                    };
+                    MapMainSignFile(file);
                     mainDocPopulated = true;
-                    file.Done = true;
+                    if (onlyUpdateMainFile)
+                        break;
                 }
                 else
                 {
@@ -147,9 +159,36 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             }
         }
 
-        public async Task GetDocument(string baseUrl, Guid? documentId = null)
+        private void MapMainSignFile(DemoFile file)
         {
-            var result = await httpClient.GetAsync($"{baseUrl}api/Sign/{documentId ?? Document.DocumentId}");
+            Document.Title = file.Title;
+            Document.Description = file.Description;
+            Document.DataToSign = new DataToSign()
+            {
+                Base64Content = file.Data,
+                ConvertToPDF = file.ConvertToPdf,
+                FileName = file.FileName,
+                Base64ContentStyleSheet = file.Base64ContentStyleSheet
+            };
+            file.Done = true;
+        }
+
+        public async Task UpdateAttachment(DemoFile file)
+        {
+            Console.WriteLine("Updating file");
+            if (file.Id != null && file.Id != Document.DocumentId)
+            {
+                await UploadAttachment(file);
+            }
+            else
+            {
+                await UpdateDocument();
+            }
+        }
+
+        public async Task GetDocument(Guid? documentId = null)
+        {
+            var result = await httpClient.GetAsync($"{uriHelper.GetBaseUri()}api/Sign/{documentId ?? Document.DocumentId}");
             var resultAsString = await result.Content.ReadAsStringAsync();
             Console.WriteLine($"Status code: {result.StatusCode}");
             VerifySuccess(result, resultAsString);
@@ -166,14 +205,17 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 Type = AttachmentType.Sign,
                 Base64ContentStyleSheet = Document.DataToSign.Base64ContentStyleSheet
             });
-            await GetAttachments(baseUrl);
+            await GetAttachments();
         }
 
-        public async Task UpdateDocument(string baseUrl)
+        public async Task UpdateDocument()
         {
+            Console.WriteLine("Updating main document");
+
+            UpdateFiles(true);
             var doc = Newtonsoft.Json.JsonConvert.SerializeObject(this.Document);
 
-            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{baseUrl}api/Sign/Update/{Document.DocumentId}")
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{uriHelper.GetBaseUri()}api/Sign/Update/{Document.DocumentId}")
             {
                 Content = new StringContent(doc, Encoding.UTF8, "application/json")
             };
@@ -184,14 +226,14 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             VerifySuccess(result, resultAsString);
 
             //TODO: use response when new version including full response is released 
-            await GetDocument(baseUrl);
+            await GetDocument();
         }
 
-        public async Task<DemoDocument> CreateDocument(string baseUrl)
+        public async Task<DemoDocument> CreateDocument()
         {
             UpdateFiles();
             var doc = Newtonsoft.Json.JsonConvert.SerializeObject(this.Document);
-            var result = await httpClient.PostAsync($"{baseUrl}api/Sign/Create", new StringContent(doc, Encoding.UTF8, "application/json"));
+            var result = await httpClient.PostAsync($"{uriHelper.GetBaseUri()}api/Sign/Create", new StringContent(doc, Encoding.UTF8, "application/json"));
             var resultAsString = await result.Content.ReadAsStringAsync();
 
             VerifySuccess(result, resultAsString);
@@ -199,32 +241,42 @@ namespace Idfy.Blazor.DemoSite.Client.Services
 
             if (uploadAttachments)
             {
-                await UploadAttachments(baseUrl);
+                await UploadAttachments();
             }
             return Document;            
         }
 
-        private async Task UploadAttachments(string baseUrl)
+        private async Task UploadAttachments()
         {
             foreach (var attachment in Files.Where(a => !a.Done))
             {
-                HttpResponseMessage result;
-                string resultAsString;
-                int attempt = 1;
-                do
-                {
-                    await Task.Delay(1000 * attempt);
-                    result = await httpClient.PostAsync($"{baseUrl}api/Sign/{Document.DocumentId}/Attachment", 
-                        new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(attachment), Encoding.UTF8, "application/json"));
-                    resultAsString = await result.Content.ReadAsStringAsync();
-                    attempt++;
-                } while (attempt < 5 && !result.IsSuccessStatusCode); // Do some retries in case document not ready
-
-                VerifySuccess(result, resultAsString);
+                await UploadAttachment(attachment);
             }
         }
 
-        private async Task GetAttachments(string baseUrl)
+        private async Task UploadAttachment(DemoFile attachment)
+        {
+            HttpResponseMessage result;
+            string resultAsString;
+            int attempt = 0;
+            var url = $"{uriHelper.GetBaseUri()}api/Sign/{Document.DocumentId}/Attachment";
+
+            if(attachment.Id != null && attachment.Id !=  Document.DocumentId)
+                url += $"?id={attachment.Id}";
+            do
+            {              
+                await Task.Delay(1000 * attempt);
+                result = await httpClient.PostAsync(url, new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(attachment), Encoding.UTF8, "application/json"));
+                resultAsString = await result.Content.ReadAsStringAsync();
+                attempt++;
+            } while (attempt < 5 && !result.IsSuccessStatusCode); // Do some retries in case document not ready
+
+            VerifySuccess(result, resultAsString);
+            var deserialized = Newtonsoft.Json.JsonConvert.DeserializeObject<Attachment>(resultAsString);
+            attachment.Id = deserialized.Id;
+        }
+
+        private async Task GetAttachments()
         {
             if (Document == null) return;
             
@@ -236,7 +288,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 do
                 {
                     await Task.Delay(1000 * attempt);
-                    result = await httpClient.GetAsync($"{baseUrl}api/Sign/{Document.DocumentId}/Attachment/{attachment.Key}");
+                    result = await httpClient.GetAsync($"{uriHelper.GetBaseUri()}api/Sign/{Document.DocumentId}/Attachment/{attachment.Key}");
                     resultAsString = await result.Content.ReadAsStringAsync();
                     attempt++;
                 } while (attempt < 5 && !result.IsSuccessStatusCode); // Do some retries in case document not ready
@@ -270,9 +322,9 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             }
         }
 
-        public async Task DeleteSignature(string baseUrl, Signer signer)
+        public async Task DeleteSignature(Signer signer)
         {
-            var result = await httpClient.DeleteAsync($"{baseUrl}api/Sign/{Document.DocumentId}/DeleteSignature/{signer.Id}");
+            var result = await httpClient.DeleteAsync($"{uriHelper.GetBaseUri()}api/Sign/{Document.DocumentId}/DeleteSignature/{signer.Id}");
             var resultAsString = await result.Content.ReadAsStringAsync();
 
             VerifySuccess(result, resultAsString);

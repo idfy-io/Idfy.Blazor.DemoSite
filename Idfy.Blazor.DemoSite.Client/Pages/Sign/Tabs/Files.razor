@@ -20,16 +20,36 @@
                 </MatExpansionPanelSummary>
 
                 <MatExpansionPanelDetails>
-                    <MatTextField @bind-Value="@doc.Title" Label="Title" FullWidth="true"></MatTextField>
-                    <MatTextField @bind-Value="@doc.FileName" Label="Filename" FullWidth="true"></MatTextField>
-                    <MatTextField @bind-Value="@doc.Description" Label="Description" TextArea="true" FullWidth="true"></MatTextField>
-                    <MatSelect Label="Filetype" Value="@doc.Type.ToString()" ValueChanged="@((value) => SetFileType(@doc, value))" Outlined="true">
-                        @foreach (AttachmentType attachmentType in Enum.GetValues(typeof(AttachmentType)))
-                        {
-                            <MatOption Value="@attachmentType.ToString()">@attachmentType.ToString()</MatOption>
-                        }
-                    </MatSelect>
-                    <MatSlideToggle @bind-Checked="@doc.ConvertToPdf"></MatSlideToggle> <span>Convert to pdf</span>
+                    <div class="mat-layout-grid">
+                        <div class="mat-layout-grid-inner">
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                <MatTextField @bind-Value="@doc.Title" Label="Title" FullWidth="true"></MatTextField>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                <MatTextField @bind-Value="@doc.FileName" Label="Filename" FullWidth="true"></MatTextField>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                                <MatTextField @bind-Value="@doc.Description" Label="Description" TextArea="true" FullWidth="true"></MatTextField>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                                <MatSelect Label="Filetype" Value="@doc.Type.ToString()" ValueChanged="@((value) => SetFileType(@doc, value))" Outlined="true">
+                                    @foreach (AttachmentType attachmentType in Enum.GetValues(typeof(AttachmentType)))
+                                    {
+                                        <MatOption Value="@attachmentType.ToString()">@attachmentType.ToString()</MatOption>
+                                    }
+                                </MatSelect>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                                <MatSlideToggle @bind-Checked="@doc.ConvertToPdf"></MatSlideToggle> <span>Convert to pdf</span>
+                            </div> 
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                                @if (Static.Helpers.IsEditable(DocumentService.Document))
+                                {
+                                    <MatButton Outlined="true" Icon="update" OnClick="@(args => UpdateFile(doc))">Save</MatButton>
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </MatExpansionPanelDetails>
             </MatExpansionPanel>
         }
@@ -69,9 +89,17 @@
 
 @code {
 
+    [Parameter]
+    EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
+
     protected void AddFile(UIMouseEventArgs evt)
     {
         DocumentService.Files.Add(DocumentService.DefaultTxtFile);
+    }
+
+    protected async Task UpdateFile(DemoFile demoFile)
+    {
+       await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.UpdateAttachment(demoFile));
     }
 
     protected async Task Download(UIMouseEventArgs evt, Idfy.Signature.FileFormat fileFormat, Guid? documentItemId = null)

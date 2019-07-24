@@ -2,7 +2,6 @@
 @using Services;
 @inject IJSRuntime JsRuntime;
 @inject DocumentService DocumentService;
-@inject IUriHelper UriHelper;
 
 
 <MatExpansionPanel>
@@ -24,7 +23,7 @@
         </MatExpansionPanelSubHeader>
     </MatExpansionPanelSummary>
 
-    <MatExpansionPanelDetails>
+    <MatExpansionPanelDetails Class="app-expansion-panel">
         <div class="container">
             <h3 class="app-title">Name</h3>
             <div class="mat-layout-grid">
@@ -155,8 +154,8 @@
     protected async Task DeleteSignature(UIMouseEventArgs e)
     {
         this.CloseDocumentSignature(e);
-        await OnExecuteWithErrorHandler.InvokeAsync(this.DocumentService.DeleteSignature(UriHelper.GetBaseUri(), SignerData));
-        await DocumentService.GetDocument(UriHelper.GetBaseUri());
+        await OnExecuteWithErrorHandler.InvokeAsync(this.DocumentService.DeleteSignature(SignerData));
+        await DocumentService.GetDocument();
 
     }
 

@@ -5,7 +5,6 @@
 @using Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs;
 @inject DocumentService DocumentService
 @inject EnvironmentService EnvironmentService
-@inject IUriHelper UriHelper
 @inject HttpClient Http
 @inject LocalStorage Storage
 
@@ -21,7 +20,7 @@
                     <General></General>
                 </MatTab>
                 <MatTab Label="Files">
-                    <Files></Files>
+                    <Files OnExecuteWithErrorHandler="@(t =>  ExecuteWithErrorHandling(async() => await t ))"></Files>
                 </MatTab>
                 <MatTab Label="Signers">
                     <Signers OnExecuteWithErrorHandler="@(t =>  ExecuteWithErrorHandling(async() => await t ))"></Signers>
@@ -42,7 +41,7 @@
 
                 @if (DocumentService.Document.Status.DocumentStatus != Signature.DocumentStatus.Signed)
                 {
-                    <MatButton Outlined="true" Icon="update" OnClick="UpdateDocument">Update document</MatButton>
+                    <MatButton Outlined="true" Icon="update" OnClick="UpdateDocument">Save</MatButton>
                 }
                 <MatButton Outlined="true" Icon="clear" OnClick="Clear">Clear</MatButton>
             }
@@ -108,7 +107,7 @@
     {
         await ExecuteWithErrorHandling(async () =>
         {
-            await DocumentService.GetDocument(UriHelper.GetBaseUri(), documentId);
+            await DocumentService.GetDocument(documentId);
         }, clearCacheOnError);
     }
 
@@ -116,7 +115,7 @@
     {
         await ExecuteWithErrorHandling(async () =>
         {
-            await DocumentService.UpdateDocument(UriHelper.GetBaseUri());
+            await DocumentService.UpdateDocument();
         });
     }
 
@@ -124,7 +123,7 @@
     {
         await ExecuteWithErrorHandling(async () =>
         {
-            var result = await this.DocumentService.CreateDocument(UriHelper.GetBaseUri());
+            var result = await this.DocumentService.CreateDocument();
             DocumentService.Document = result;
             Storage["document"] = result.DocumentId.ToString();
             Storage["env"] = EnvironmentService.CurrentEnvironment;

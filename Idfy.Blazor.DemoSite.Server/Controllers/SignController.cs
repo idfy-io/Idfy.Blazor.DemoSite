@@ -19,9 +19,9 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
 
         [HttpPost]
         [Route("[action]")]
-        public async Task <IActionResult> Create([FromBody]DocumentCreateOptions request)
+        public async Task<IActionResult> Create([FromBody]DocumentCreateOptions request)
         {
-            var env =SignatureServiceWrapper.SetEnvironment(Request.Headers);
+            var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
 
             try
             {
@@ -53,13 +53,13 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
 
         [HttpPost]
         [Route("{documentId}/[action]")]
-        public async Task<IActionResult> Attachment(Guid documentId, [FromBody]AttachmentOptions request)
+        public async Task<IActionResult> Attachment(Guid documentId, [FromBody]AttachmentOptions request, [FromQuery] Guid? id = null)
         {
             var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
-
             try
             {
-                var result = await SignatureServiceWrapper.GetService(env).CreateAttachmentAsync(documentId, request);
+                var service = SignatureServiceWrapper.GetService(env);
+                var result = await (id == null ? service.CreateAttachmentAsync(documentId, request) : service.UpdateAttachmentAsync(documentId, id.Value, request));
                 return Ok(result);
             }
             catch (IdfyException e)
@@ -136,6 +136,22 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
             }
         }
 
-      
+        [HttpPost]
+        [Route("{documentId}/[action]")]
+        public async Task<IActionResult> AddSigner(Guid documentId, [FromBody] SignerOptions signer)
+        {
+            try
+            {
+                var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
+                var response = await SignatureServiceWrapper.GetService(env).CreateSignerAsync(documentId, signer);
+                return Ok(response);
+            }
+            catch (IdfyException e)
+            {
+                return BadRequest(e);
+            }
+        }
+
+
     }
 }
