@@ -5,7 +5,7 @@ namespace Idfy.Blazor.DemoSite.Shared
 {
     public class DemoSigner: Signer
     {
-        public bool GetSocialSecurityNumber { get; set; }
+        public new bool GetSocialSecurityNumber { get; set; }
         public new bool Required { get; set; }
     }
 

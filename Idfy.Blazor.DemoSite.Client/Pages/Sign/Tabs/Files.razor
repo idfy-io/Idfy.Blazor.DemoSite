@@ -22,31 +22,32 @@
                 <MatExpansionPanelDetails>
                     <div class="mat-layout-grid">
                         <div class="mat-layout-grid-inner">
-                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                                <MatTextField @bind-Value="@doc.Title" Label="Title" FullWidth="true"></MatTextField>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-9"> Id: @doc.Id </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                @if (Static.Helpers.IsEditable(DocumentService.Document))
+                                {
+                                <MatButton Outlined="true" Icon="update" OnClick="@(args => UpdateFile(doc))">Save changes</MatButton>
+                                }
                             </div>
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                                <MatTextField @bind-Value="@doc.FileName" Label="Filename" FullWidth="true"></MatTextField>
+                                <MatTextField Class="full-width" @bind-Value="@doc.Title" Label="Title" Outlined="true"></MatTextField>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                                <MatTextField Class="full-width" @bind-Value="@doc.FileName" Label="Filename" Outlined="true"></MatTextField>
                             </div>
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
                                 <MatTextField @bind-Value="@doc.Description" Label="Description" TextArea="true" FullWidth="true"></MatTextField>
                             </div>
-                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
                                 <MatSelect Label="Filetype" Value="@doc.Type.ToString()" ValueChanged="@((value) => SetFileType(@doc, value))" Outlined="true">
                                     @foreach (AttachmentType attachmentType in Enum.GetValues(typeof(AttachmentType)))
                                     {
-                                        <MatOption Value="@attachmentType.ToString()">@attachmentType.ToString()</MatOption>
+                                    <MatOption Value="@attachmentType.ToString()">@attachmentType.ToString()</MatOption>
                                     }
                                 </MatSelect>
                             </div>
-                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
                                 <MatSlideToggle @bind-Checked="@doc.ConvertToPdf"></MatSlideToggle> <span>Convert to pdf</span>
-                            </div> 
-                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
-                                @if (Static.Helpers.IsEditable(DocumentService.Document))
-                                {
-                                    <MatButton Outlined="true" Icon="update" OnClick="@(args => UpdateFile(doc))">Save</MatButton>
-                                }
                             </div>
                         </div>
                     </div>

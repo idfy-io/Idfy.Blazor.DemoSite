@@ -16,5 +16,11 @@ namespace Idfy.Blazor.DemoSite.Client.Static
             Primary = MatThemeColors.Green._500.Value,
             Secondary = MatThemeColors.Green._500.Value
         };
+
+        public static MatTheme Warn => new MatTheme()
+        {
+            Primary = MatThemeColors.Red._500.Value,
+            Secondary = MatThemeColors.Red._500.Value
+        };
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Idfy.Blazor.DemoSite.Server.Clients;
 using Idfy.Signature;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -24,13 +23,17 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
             var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
 
             try
-            {
+            { 
                 var result = await SignatureServiceWrapper.GetService(env).CreateDocumentAsync(request);
                 return Ok(result);
             }
             catch (IdfyException e)
             {
                 return BadRequest(e);
+            }
+            catch(Exception e)
+            {
+                throw e;
             }
         }
 
@@ -138,12 +141,13 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
 
         [HttpPost]
         [Route("{documentId}/[action]")]
-        public async Task<IActionResult> AddSigner(Guid documentId, [FromBody] SignerOptions signer)
+        public async Task<IActionResult> AddSigner(Guid documentId, [FromBody] SignerOptions signer, [FromQuery] Guid? id = null)
         {
             try
             {
                 var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
-                var response = await SignatureServiceWrapper.GetService(env).CreateSignerAsync(documentId, signer);
+                var service = SignatureServiceWrapper.GetService(env);
+                var response = id == null ? await service.CreateSignerAsync(documentId, signer) : await service.UpdateSignerAsync(documentId, id.Value, signer);
                 return Ok(response);
             }
             catch (IdfyException e)

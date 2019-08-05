@@ -1,8 +1,11 @@
-<MatThemeProvider Theme="Static.Themes.Success">
+<MatThemeProvider Theme="@(Theme ?? Static.Themes.Success)">
     <MatButton Class="@Class" OnClick="@OnClick" Raised="true" Icon="@Icon" TrailingIcon="@TrailingIcon">@ChildContent</MatButton>
 </MatThemeProvider>
 
 @code {
+    [Parameter]
+    protected MatTheme Theme { get; set; }
+
     [Parameter]
     private RenderFragment ChildContent { get; set; }
 

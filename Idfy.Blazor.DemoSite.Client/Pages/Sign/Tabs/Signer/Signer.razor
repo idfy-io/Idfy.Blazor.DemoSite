@@ -1,5 +1,6 @@
 @using Idfy.Blazor.DemoSite.Shared;
 @using Services;
+@using Idfy.Blazor.DemoSite.Client.Components.Buttons;
 @inject IJSRuntime JsRuntime;
 @inject DocumentService DocumentService;
 
@@ -10,7 +11,7 @@
         <MatExpansionPanelSubHeader>
             @if (!string.IsNullOrWhiteSpace(SignerData.Url))
             {
-                <Idfy.Blazor.DemoSite.Client.Components.Buttons.SuccessButton Class="full-width" OnClick="Sign">Sign</Idfy.Blazor.DemoSite.Client.Components.Buttons.SuccessButton>
+                <AppButton Class="full-width" OnClick="Sign">Sign</AppButton>
             }
             else if (SignerData.DocumentSignature != null)
             {
@@ -24,6 +25,20 @@
     </MatExpansionPanelSummary>
 
     <MatExpansionPanelDetails Class="app-expansion-panel">
+        <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
+                    Id: @SignerData.Id
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
+                    <AppButton Class="full-width" Theme="Static.Themes.Warn" >Delete signer</AppButton>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
+                    <MatButton Outlined="true" Class="full-width" OnClick="UpdateSigner">Save changes</MatButton>
+                </div>
+            </div>
+        </div>
+
         <div class="container">
             <h3 class="app-title">Name</h3>
             <div class="mat-layout-grid">
@@ -108,7 +123,7 @@
         <div class="mat-layout-grid">
             <div class="mat-layout-grid-inner">
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
-                    <MatButton OnClick="@DeleteSignature">Delete signature</MatButton>
+                    <AppButton Theme="Static.Themes.Warn" OnClick="@DeleteSignature">Delete signature</AppButton>
                 </div>
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
                     <MatButton OnClick="@CloseDocumentSignature">OK</MatButton>
@@ -136,27 +151,34 @@
         }
     }
 
-    protected async Task Sign(UIMouseEventArgs args)
+    private async Task Sign(UIMouseEventArgs args)
     {
         await JsRuntime.InvokeAsync<object>("open", SignerData.Url, "_blank");
     }
 
-    protected void ViewDocumentSignature(UIMouseEventArgs e)
+    private void ViewDocumentSignature(UIMouseEventArgs e)
     {
         this.signatureDialogIsOpen = true;
     }
 
-    protected void CloseDocumentSignature(UIMouseEventArgs e)
+    private void CloseDocumentSignature(UIMouseEventArgs e)
     {
         this.signatureDialogIsOpen = false;
     }
 
-    protected async Task DeleteSignature(UIMouseEventArgs e)
+    private async Task DeleteSignature(UIMouseEventArgs e)
     {
         this.CloseDocumentSignature(e);
         await OnExecuteWithErrorHandler.InvokeAsync(this.DocumentService.DeleteSignature(SignerData));
-        await DocumentService.GetDocument();
+        await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.GetDocument());
+    }
 
+    private async Task UpdateSigner(UIMouseEventArgs e)
+    {
+        await OnExecuteWithErrorHandler.InvokeAsync(Task.Run(async () => {
+            var result = await DocumentService.AddOrUpdateSigner(SignerData);
+            SignerData = result;
+        }));
     }
 
 }

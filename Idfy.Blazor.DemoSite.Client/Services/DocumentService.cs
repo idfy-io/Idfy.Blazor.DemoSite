@@ -109,16 +109,20 @@ namespace Idfy.Blazor.DemoSite.Client.Services
 
             if(Document?.Status?.DocumentStatus != null)
             {
-                signer = await UploadNewSigner(signer);
+                signer = await AddOrUpdateSigner(signer);
             }
 
             Document.Signers.Add(signer);
         }
 
-        private async Task<DemoSigner> UploadNewSigner(DemoSigner signer)
+        public async Task<DemoSigner> AddOrUpdateSigner(DemoSigner signer)
         {
+            var uri = $"{uriHelper.GetBaseUri()}api/Sign/{Document.DocumentId}/AddSigner";
+
+            if (!signer.Id.Equals(Guid.Empty))
+                uri += $"?id={signer.Id}";
             var json = Newtonsoft.Json.JsonConvert.SerializeObject(signer);
-            var result = await httpClient.PostAsync($"{uriHelper.GetBaseUri()}api/Sign/{Document.DocumentId}/AddSigner", new StringContent(json, Encoding.UTF8, "application/json"));
+            var result = await httpClient.PostAsync(uri, new StringContent(json, Encoding.UTF8, "application/json"));
             var resultAsString = await result.Content.ReadAsStringAsync();
 
             VerifySuccess(result, resultAsString);

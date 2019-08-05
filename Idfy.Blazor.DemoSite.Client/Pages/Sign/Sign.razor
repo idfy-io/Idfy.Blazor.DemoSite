@@ -37,7 +37,7 @@
             @if (DocumentService.Document?.DocumentId != null && !DocumentService.Document.DocumentId.Equals(Guid.Empty))
             {
                 <p>Currently viewing document with Id: @DocumentService.Document.DocumentId</p>
-                <SuccessButton Icon="refresh" OnClick="args => Refresh(args)">Refresh</SuccessButton>
+                <AppButton Theme="Static.Themes.Success" Icon="refresh" OnClick="args => Refresh(args)">Refresh</AppButton>
 
                 @if (DocumentService.Document.Status.DocumentStatus != Signature.DocumentStatus.Signed)
                 {
@@ -47,7 +47,7 @@
             }
             else
             {
-                <SuccessButton Class="full-width" Icon="pets" OnClick="CreateDocument" TrailingIcon="pets">Create Document</SuccessButton>
+                <AppButton Theme="Static.Themes.Success" Class="full-width" Icon="pets" OnClick="CreateDocument" TrailingIcon="pets">Create Document</AppButton>
             }
 
             <MatDialog @bind-IsOpen="@dialogIsOpen">
