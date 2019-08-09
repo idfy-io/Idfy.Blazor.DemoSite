@@ -1,9 +1,11 @@
 @using Idfy.Blazor.DemoSite.Shared
 @using Services;
+@using Microsoft.JSInterop;
+
 @inject DocumentService DocumentService;
 @inject EnvironmentService EnvironmentService;
 @inject IJSRuntime JsRuntime;
-@inject IUriHelper UriHelper
+@inject IUriHelper UriHelper;
 
 
 
@@ -26,28 +28,31 @@
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
                                 @if (Static.Helpers.IsEditable(DocumentService.Document))
                                 {
-                                <MatButton Outlined="true" Icon="update" OnClick="@(args => UpdateFile(doc))">Save changes</MatButton>
+                                    <MatButton Outlined="true" Icon="update" OnClick="@(args => UpdateFile(doc))">Save changes</MatButton>
                                 }
                             </div>
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                                <MatTextField Class="full-width" @bind-Value="@doc.Title" Label="Title" Outlined="true"></MatTextField>
+                                <MatTextField Class="full-width" @bind-Value="@doc.Title" Icon="title" Label="Title" Outlined="true"></MatTextField>
                             </div>
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                                <MatTextField Class="full-width" @bind-Value="@doc.FileName" Label="Filename" Outlined="true"></MatTextField>
+                                <MatTextField Class="full-width" @bind-Value="@doc.FileName" Icon="picture_as_pdf" Label="Filename" Outlined="true"></MatTextField>
                             </div>
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
                                 <MatTextField @bind-Value="@doc.Description" Label="Description" TextArea="true" FullWidth="true"></MatTextField>
                             </div>
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
-                                <MatSelect Label="Filetype" Value="@doc.Type.ToString()" ValueChanged="@((value) => SetFileType(@doc, value))" Outlined="true">
+                                <MatSelect Label="Filetype" @bind-Value="@doc.StringType" Outlined="true">
                                     @foreach (AttachmentType attachmentType in Enum.GetValues(typeof(AttachmentType)))
                                     {
-                                    <MatOption Value="@attachmentType.ToString()">@attachmentType.ToString()</MatOption>
+                                        <Option Value="@attachmentType.ToString()">@attachmentType.ToString()</Option>
                                     }
                                 </MatSelect>
                             </div>
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
                                 <MatSlideToggle @bind-Checked="@doc.ConvertToPdf"></MatSlideToggle> <span>Convert to pdf</span>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <input type="file" @onchange="@((x)=> UploadFile(doc))" id="fileUpload" />
                             </div>
                         </div>
                     </div>
@@ -100,7 +105,7 @@
 
     protected async Task UpdateFile(DemoFile demoFile)
     {
-       await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.UpdateAttachment(demoFile));
+        await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.UpdateAttachment(demoFile));
     }
 
     protected async Task Download(UIMouseEventArgs evt, Idfy.Signature.FileFormat fileFormat, Guid? documentItemId = null)
@@ -118,15 +123,17 @@
         {
             Console.WriteLine(e);
         }
-
     }
+   
 
-    protected void SetFileType(DemoFile file, string value)
+    async Task UploadFile(DemoFile file)
     {
-        AttachmentType type;
-        if (Enum.TryParse(value, out type))
+        var data = await JsInterop.GetFileData(JsRuntime, "fileUpload");
+        if(!string.IsNullOrWhiteSpace(data?.Content))
         {
-            file.Type = type;
+            file.Data = data.Content;
+            file.FileName = data.Name;
+            file.ConvertToPdf = !data.Name.Contains("pdf") && !data.Name.Contains("xml");
         }
     }
 }

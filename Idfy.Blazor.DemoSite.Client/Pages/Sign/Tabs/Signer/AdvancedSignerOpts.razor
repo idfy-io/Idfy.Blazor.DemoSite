@@ -6,10 +6,17 @@
 
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+            <Idfy.Blazor.DemoSite.Client.Components.DynamicChipList Title="Tags" Icon="label" ChipList="@SignerData.Tags"></Idfy.Blazor.DemoSite.Client.Components.DynamicChipList>
+        </div>
+
         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+            <p>External signer Id</p>
             <MatTextField Class="full-width no-margin" @bind-Value="@SignerData.ExternalSignerId" Label="External Id" Outlined="true"></MatTextField>
         </div>
+
         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+            <p>Ordered signatures</p>
             <MatNumericUpDownField Icon="format_list_numbered"
                                    Label="Order"
                                    ValueChanged="SetOrder"

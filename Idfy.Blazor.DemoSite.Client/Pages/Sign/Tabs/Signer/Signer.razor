@@ -173,6 +173,18 @@
         await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.GetDocument());
     }
 
+    private async Task DeleteSigner(UIMouseEventArgs e)
+    {
+        //if(Guid.Empty.Equals(SignerData.Id))
+        //{
+        //    this.DocumentService.Document.Signers = 
+        //}
+        //else
+        //{
+        //    // TODO: IMPLEMENT
+        //}
+    }
+
     private async Task UpdateSigner(UIMouseEventArgs e)
     {
         await OnExecuteWithErrorHandler.InvokeAsync(Task.Run(async () => {

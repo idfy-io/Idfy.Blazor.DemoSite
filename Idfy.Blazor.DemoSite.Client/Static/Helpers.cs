@@ -7,6 +7,6 @@ namespace Idfy.Blazor.DemoSite.Client.Static
         public static bool IsEditable(DemoDocument demoDocument)
         {
             return demoDocument?.Status?.DocumentStatus != null && demoDocument.Status.DocumentStatus != Signature.DocumentStatus.Signed;
-        }
+        } 
     }
 }

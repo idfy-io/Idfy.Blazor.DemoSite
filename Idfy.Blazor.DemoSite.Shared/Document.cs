@@ -1,4 +1,5 @@
 ﻿using Idfy.Signature;
+using System;
 using System.Collections.Generic;
 
 namespace Idfy.Blazor.DemoSite.Shared
@@ -25,6 +26,21 @@ namespace Idfy.Blazor.DemoSite.Shared
         public new bool ConvertToPdf { get; set; }
         public bool Done { get; set; }
         public string Base64ContentStyleSheet { get; set; }
+        public string StringType
+        {
+            get
+            {
+                return Type.ToString();
+            }
+            set
+            {                
+                AttachmentType type;
+                if (Enum.TryParse(value, out type))
+                {
+                    Type = type;
+                }               
+            }
+        }
     }
     
 }

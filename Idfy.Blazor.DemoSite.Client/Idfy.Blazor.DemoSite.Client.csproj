@@ -11,8 +11,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="wwwroot\JS\jsInterop.js" />
+    
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.*.json" CopyToPublishDirectory="Never" Condition="'$(Configuration)'!='Debug'"> </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Cloudcrate.AspNetCore.Blazor.Browser.Storage" Version="3.0.0-preview7.19365.7" />
-    <PackageReference Include="MatBlazor" Version="1.3.0" />
+    <PackageReference Include="MatBlazor" Version="1.5.1" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor" Version="3.0.0-preview7.19365.7" />
     <PackageReference Include="Microsoft.AspNetCore.Blazor.Build" Version="3.0.0-preview7.19365.7" PrivateAssets="all" />
   </ItemGroup>

@@ -9,7 +9,7 @@
             <MatSelect Class="full-width no-margin" Label="Select mechanism" Value="@Signer.SignatureType.Mechanism.ToString()" ValueChanged="@((value) => SetMechanism(Signer, value))" Outlined="true">
                 @foreach (SignatureMechanism mechanism in Enum.GetValues(typeof(SignatureMechanism)))
                 {
-                    <MatOption Value="@mechanism.ToString()">@mechanism.ToString()</MatOption>
+                    <Option Value="@mechanism.ToString()">@mechanism.ToString()</Option>
                 }
             </MatSelect>
             </div>

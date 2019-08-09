@@ -4,9 +4,10 @@
     "imageFile": ""
   },
   "singleInstance": false,
+  "company":"Idfy Norge",
   "build": {
     "appId": "com.Idfy.Blazor.DemoSite.Server.app",
-    "productName": "Idfy.Blazor.DemoSite.Server",
+    "productName": "Signature Demo App",
     "copyright": "Copyright © 2019",
     "buildVersion": "1.0.0",
     "compression": "maximum",
@@ -17,16 +18,19 @@
       {
         "from": "./bin",
         "to": "bin",
-        "filter": ["**/*"]
+        "filter": [ "**/*" ]
       }
     ],
     "files": [
       {
         "from": "./ElectronHostHook/node_modules",
         "to": "ElectronHostHook/node_modules",
-        "filter": ["**/*"]
+        "filter": [ "**/*" ]
       },
       "**/*"
-    ]
+    ],
+    "win": {
+      "icon": "../../../Assets/sign.png"
+    }
   }
 }

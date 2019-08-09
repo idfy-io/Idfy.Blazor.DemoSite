@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <LangVersion>7.3</LangVersion>
+    <Company>Idfy Norge</Company>
   </PropertyGroup>
   <ItemGroup>
     <Watch Include="**\*.razor" />
@@ -18,10 +19,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Idfy.Blazor.DemoSite.Client\Idfy.Blazor.DemoSite.Client.csproj" />
     <ProjectReference Include="..\Idfy.Blazor.DemoSite.Shared\Idfy.Blazor.DemoSite.Shared.csproj" />
+    <Content Remove="*\appsettings.*.json" Condition="'$(Configuration)'!='Debug'" />
   </ItemGroup>
   <ItemGroup>
-    <Content Update="electron.manifest.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <Folder Include="Assets\" />
   </ItemGroup>
 </Project>

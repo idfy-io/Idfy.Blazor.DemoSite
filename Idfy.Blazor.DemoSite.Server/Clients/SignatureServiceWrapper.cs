@@ -21,8 +21,8 @@ namespace Idfy.Blazor.DemoSite.Server.Clients
 
             foreach (var environment in appSettings.Environments)
             {
-                environments.TryAdd(environment.Key, new SignatureService(environment.Value.ClientId, environment.Value.ClientSecret, scopes));
-                newFeatureClients.TryAdd(environment.Key, new NewFeaturesApiClient(environment.Value.ClientId, environment.Value.ClientSecret, scopes));
+                environments.TryAdd(environment.Key, new SignatureService(environment.Value.ClientId.Trim(), environment.Value.ClientSecret.Trim(), scopes));
+                newFeatureClients.TryAdd(environment.Key, new NewFeaturesApiClient(environment.Value.ClientId.Trim(), environment.Value.ClientSecret.Trim(), scopes));
             }
             this.appSettings = appSettings;
         }
@@ -60,7 +60,6 @@ namespace Idfy.Blazor.DemoSite.Server.Clients
                 environmentName = fromQuery;
 
             var environment = appSettings.Environments[environmentName];
-
 
             if (!string.IsNullOrWhiteSpace(environment.ApiBaseUrl))
             {

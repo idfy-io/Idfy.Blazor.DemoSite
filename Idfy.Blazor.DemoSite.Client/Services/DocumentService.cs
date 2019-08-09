@@ -104,7 +104,8 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                         SignatureReceipt = NotificationSetting.Off
                     },
                     MergeFields = new Dictionary<string, string>()
-                }
+                },
+                Tags = new List<string>()
             };
 
             if(Document?.Status?.DocumentStatus != null)
