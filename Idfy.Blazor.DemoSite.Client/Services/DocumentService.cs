@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Microsoft.AspNetCore.Components;
+using Newtonsoft.Json;
 
 namespace Idfy.Blazor.DemoSite.Client.Services
 {
@@ -127,7 +128,10 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             var resultAsString = await result.Content.ReadAsStringAsync();
 
             VerifySuccess(result, resultAsString);
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<DemoSigner>(resultAsString);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<DemoSigner>(resultAsString, new JsonSerializerSettings
+            {
+                NullValueHandling = NullValueHandling.Ignore
+            });
         }
 
         public DemoSite.Shared.DemoFile DefaultTxtFile => new DemoSite.Shared.DemoFile()
@@ -135,8 +139,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             Data = Convert.ToBase64String(Encoding.UTF8.GetBytes("This text can safely be signed. This is just a text file with convert to pdf sat to true")),
             ConvertToPdf = true,
             Description = "The bottom of the pizza, called the \"crust\", may vary widely according to style, thin as in a typical hand-tossed" +
-                " Neapolitan pizza or thick as in a deep-dish Chicago-style. It is traditionally plain, " +
-                "but may also be seasoned with garlic or herbs, or stuffed with cheese. The outer edge of the pizza is sometimes referred to as the cornicione.",
+                " Neapolitan pizza or thick as in a deep-dish Chicago-style.",
             FileName = "test.txt",
             Title = Static.DocNameGenerator.GenerateTitle(),
             Type = AttachmentType.Sign
@@ -145,6 +148,8 @@ namespace Idfy.Blazor.DemoSite.Client.Services
 
         public void UpdateFiles(bool onlyUpdateMainFile = false)
         {
+            if (Files.Any(f => string.IsNullOrWhiteSpace(f.Data))) Files = new List<DemoFile>() { DefaultTxtFile };
+
             uploadAttachments = false;
             var mainDocPopulated = false;
             Document.Advanced.Attachments = Files.Count() - 1;

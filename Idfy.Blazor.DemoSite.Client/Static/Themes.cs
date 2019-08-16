@@ -7,7 +7,7 @@ namespace Idfy.Blazor.DemoSite.Client.Static
     {
         public static MatTheme BlueIsh => new MatTheme()
         {
-            Primary = "#3f51b5",
+            Primary = "#4183c4",
             Secondary = "#8c9eff"
         };
 

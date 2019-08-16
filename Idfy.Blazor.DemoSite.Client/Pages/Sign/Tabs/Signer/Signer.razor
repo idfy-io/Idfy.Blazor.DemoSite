@@ -1,5 +1,6 @@
 @using Idfy.Blazor.DemoSite.Shared;
 @using Services;
+@using Static;
 @using Idfy.Blazor.DemoSite.Client.Components.Buttons;
 @inject IJSRuntime JsRuntime;
 @inject DocumentService DocumentService;
@@ -11,33 +12,38 @@
         <MatExpansionPanelSubHeader>
             @if (!string.IsNullOrWhiteSpace(SignerData.Url))
             {
-                <AppButton Class="full-width" OnClick="Sign">Sign</AppButton>
+            <AppButton Class="full-width" OnClick="Sign">Sign</AppButton>
             }
             else if (SignerData.DocumentSignature != null)
             {
-                <MatButton Class="full-width" Raised="true" OnClick="ViewDocumentSignature">View signature</MatButton>
+            <MatButton Class="full-width" Raised="true" OnClick="ViewDocumentSignature">View signature</MatButton>
             }
             else
             {
-                <MatIcon Icon="tag_faces"></MatIcon>
+            <MatIcon Icon="tag_faces"></MatIcon>
             }
         </MatExpansionPanelSubHeader>
     </MatExpansionPanelSummary>
 
     <MatExpansionPanelDetails Class="app-expansion-panel">
+        @if(Helpers.IsEditable(DocumentService.Document))
+        {
         <div class="mat-layout-grid">
+
             <div class="mat-layout-grid-inner">
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
                     Id: @SignerData.Id
                 </div>
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
-                    <AppButton Class="full-width" Theme="Static.Themes.Warn" >Delete signer</AppButton>
+                    <AppButton Class="full-width" Theme="Static.Themes.Warn">Delete signer</AppButton>
                 </div>
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
                     <MatButton Outlined="true" Class="full-width" OnClick="UpdateSigner">Save changes</MatButton>
                 </div>
             </div>
         </div>
+        }
+
 
         <div class="container">
             <h3 class="app-title">Name</h3>
@@ -84,39 +90,39 @@
         @if (SignerData?.DocumentSignature != null)
         {
             var signature = SignerData.DocumentSignature;
-            <div class="mat-layout-grid">
-                <div class="mat-layout-grid-inner">
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Name</h3>
-                        <p>Full: @signature.FullName</p>
-                        <p>Last: @signature.LastName</p>
-                        <p>Middle: @signature.MiddleName</p>
-                        <p>First: @signature.FirstName</p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Signature method</h3>
-                        <p>Type: @signature.SignatureMethod </p>
-                        <p>Unique Id: @signature.SignatureMethodUniqueId</p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Date of birth</h3>
-                        <p>@(signature.DateOfBirth ?? "Not set") </p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">National Id / Soc sec</h3>
-                        <p>Country code: @(signature.SocialSecurityNumber?.CountryCode ?? "Not set")  </p>
-                        <p>Value: @(signature.SocialSecurityNumber?.Value ?? "Not set") </p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Signed time</h3>
-                        <p>@signature.SignedTime UTC</p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Client Ip</h3>
-                        <p>@signature.ClientIp </p>
-                    </div>
+        <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">Name</h3>
+                    <p>Full: @signature.FullName</p>
+                    <p>Last: @signature.LastName</p>
+                    <p>Middle: @signature.MiddleName</p>
+                    <p>First: @signature.FirstName</p>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">Signature method</h3>
+                    <p>Type: @signature.SignatureMethod </p>
+                    <p>Unique Id: @signature.SignatureMethodUniqueId</p>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">Date of birth</h3>
+                    <p>@(signature.DateOfBirth ?? "Not set") </p>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">National Id / Soc sec</h3>
+                    <p>Country code: @(signature.SocialSecurityNumber?.CountryCode ?? "Not set")  </p>
+                    <p>Value: @(signature.SocialSecurityNumber?.Value ?? "Not set") </p>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">Signed time</h3>
+                    <p>@signature.SignedTime UTC</p>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">Client Ip</h3>
+                    <p>@signature.ClientIp </p>
                 </div>
             </div>
+        </div>
         }
     </MatDialogContent>
     <MatDialogActions>
@@ -177,7 +183,7 @@
     {
         //if(Guid.Empty.Equals(SignerData.Id))
         //{
-        //    this.DocumentService.Document.Signers = 
+        //    this.DocumentService.Document.Signers =
         //}
         //else
         //{

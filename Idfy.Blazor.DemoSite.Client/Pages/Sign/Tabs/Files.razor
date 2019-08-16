@@ -51,9 +51,13 @@
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
                                 <MatSlideToggle @bind-Checked="@doc.ConvertToPdf"></MatSlideToggle> <span>Convert to pdf</span>
                             </div>
-                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                                <input type="file" @onchange="@((x)=> UploadFile(doc))" id="fileUpload" />
-                            </div>
+
+                            @if (DocumentService.Document?.Status?.DocumentStatus == null)
+                            {
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                    <input type="file" @onchange="@((x)=> UploadFile(doc))" id="fileUpload" />
+                                </div>
+                            }
                         </div>
                     </div>
                 </MatExpansionPanelDetails>

@@ -21,7 +21,7 @@
         });
     },
     openUrlExternal: function (url) {
-        //Electron
+        // Electron
         var isElectron = window && window.process && window.process.type;
         if (isElectron) {
             let shell = require('electron').shell
