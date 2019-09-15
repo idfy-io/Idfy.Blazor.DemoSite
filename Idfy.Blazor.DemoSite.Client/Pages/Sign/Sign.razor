@@ -1,12 +1,11 @@
 @page  "/sign"
 @using Idfy.Blazor.DemoSite.Client.Components.Buttons;
-@using Cloudcrate.AspNetCore.Blazor.Browser.Storage;
 @using Services;
 @using Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs;
-@inject DocumentService DocumentService
-@inject EnvironmentService EnvironmentService
-@inject HttpClient Http
-@inject LocalStorage Storage
+@inject DocumentService DocumentService;
+@inject EnvironmentService EnvironmentService;
+@inject HttpClient Http;
+@inject IJSRuntime JSRuntime;
 
 
 <MatProgressBar Closed="@loaded" Indeterminate="true"></MatProgressBar>
@@ -44,7 +43,7 @@
                 }
                 <MatButton Outlined="true" Icon="clear" OnClick="Clear">Reset form</MatButton>
                 <AppButton Theme="Static.Themes.Success" Icon="pets" OnClick="CreateDocument">Create New</AppButton>
-                <AppButton Theme="Static.Themes.Success" Icon="refresh" OnClick="args => Refresh(args)">Refresh</AppButton>
+                <AppButton Theme="Static.Themes.Success" Icon="refresh" OnClick="@(() => Refresh(null, false))">Refresh</AppButton>
             }
             else
             {
@@ -72,17 +71,17 @@
     bool dialogIsOpen = false;
     string error = "";
 
-    protected override async Task OnInitAsync()
+    protected override async Task OnInitializedAsync()
     {
-        var currentDoc = Storage["document"];
-        var currentEnv = Storage["env"];
+        var currentDoc = await JSRuntime.GetLocalStorage("document");
+        var currentEnv = await JSRuntime.GetLocalStorage("env");
 
         if (!string.IsNullOrWhiteSpace(currentEnv))
             EnvironmentService.CurrentEnvironment = currentEnv;
 
         if (!string.IsNullOrWhiteSpace(currentDoc))
         {
-            await this.Refresh(null, Guid.Parse(currentDoc), true);
+            await this.Refresh(Guid.Parse(currentDoc), true);
         }
 
     }
@@ -92,19 +91,19 @@
         dialogIsOpen = false;
     }
 
-    protected async Task Clear(UIMouseEventArgs args)
+    protected async Task Clear()
     {
         await ExecuteWithErrorHandling(async () =>
         {
             loaded = false;
             await Task.Delay(500); //Just a temp workaround to reset view
-            Storage.Clear();
+            await JSRuntime.ClearLocalStorage();
             DocumentService.Init();
             loaded = true;
         });
     }
 
-    protected async Task Refresh(UIMouseEventArgs args, Guid? documentId = null, bool clearCacheOnError = false)
+    protected async Task Refresh(Guid? documentId = null, bool clearCacheOnError = false)
     {
         await ExecuteWithErrorHandling(async () =>
         {
@@ -112,7 +111,7 @@
         }, clearCacheOnError);
     }
 
-    protected async Task UpdateDocument(UIMouseEventArgs args)
+    protected async Task UpdateDocument()
     {
         await ExecuteWithErrorHandling(async () =>
         {
@@ -120,14 +119,14 @@
         });
     }
 
-    protected async Task CreateDocument(UIMouseEventArgs args)
+    protected async Task CreateDocument()
     {
         await ExecuteWithErrorHandling(async () =>
         {
             var result = await this.DocumentService.CreateDocument();
             DocumentService.Document = result;
-            Storage["document"] = result.DocumentId.ToString();
-            Storage["env"] = EnvironmentService.CurrentEnvironment;
+            await JSRuntime.SetLocalStorage("document", result.DocumentId.ToString());
+            await JSRuntime.SetLocalStorage("env", EnvironmentService.CurrentEnvironment);
         });
 
     }
@@ -159,7 +158,7 @@
 
         if(!string.IsNullOrWhiteSpace(this.error) && clearCacheOnError)
         {
-            Storage.Clear();
+            await JSRuntime.ClearLocalStorage();
         }
 
     }

@@ -5,7 +5,7 @@
 @inject DocumentService DocumentService;
 @inject EnvironmentService EnvironmentService;
 @inject IJSRuntime JsRuntime;
-@inject IUriHelper UriHelper;
+@inject NavigationManager UriHelper;
 
 
 
@@ -44,7 +44,7 @@
                                 <MatSelect Label="Filetype" @bind-Value="@doc.StringType" Outlined="true">
                                     @foreach (AttachmentType attachmentType in Enum.GetValues(typeof(AttachmentType)))
                                     {
-                                        <Option Value="@attachmentType.ToString()">@attachmentType.ToString()</Option>
+                                        <MatOption Value="@attachmentType.ToString()">@attachmentType.ToString()</MatOption>
                                     }
                                 </MatSelect>
                             </div>
@@ -55,7 +55,7 @@
                             @if (DocumentService.Document?.Status?.DocumentStatus == null)
                             {
                                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                                    <input type="file" @onchange="@((x)=> UploadFile(doc))" id="fileUpload" />
+                                    <input type="file" @onchange="@(e => UploadFile(doc))" id="fileUpload" />
                                 </div>
                             }
                         </div>
@@ -72,10 +72,10 @@
     @if (DocumentService.Document?.Status?.CompletedPackages != null)
     {
         <h3 class="app-title">@DocumentService.Document.Title - Download files</h3>
-        <MatButton OnClick="@(args => Download(args, Idfy.Signature.FileFormat.Unsigned))" Class="btn-margin">@Idfy.Signature.FileFormat.Unsigned</MatButton>
+        <MatButton OnClick="@(args => Download(Idfy.Signature.FileFormat.Unsigned))" Class="btn-margin">@Idfy.Signature.FileFormat.Unsigned</MatButton>
         @foreach (var package in DocumentService.Document.Status.CompletedPackages)
         {
-            <MatButton OnClick="@(args => Download(args, package))" Class="btn-margin">@package</MatButton>
+            <MatButton OnClick="@(args => Download(package))" Class="btn-margin">@package</MatButton>
         }
     }
 
@@ -85,10 +85,10 @@
         {
             var matchedFile = DocumentService.Files.FirstOrDefault(f => f.Id?.ToString() == attachment.Key);
             <h3 class="app-title">@matchedFile.Title - Download files</h3>
-            <MatButton OnClick="@(args => Download(args, Idfy.Signature.FileFormat.Unsigned, Guid.Parse(attachment.Key)))" Class="btn-margin">@Idfy.Signature.FileFormat.Unsigned</MatButton>
+            <MatButton OnClick="@(args => Download(Idfy.Signature.FileFormat.Unsigned, Guid.Parse(attachment.Key)))" Class="btn-margin">@Idfy.Signature.FileFormat.Unsigned</MatButton>
             @foreach (var package in attachment.Value)
             {
-                <MatButton OnClick="@(args => Download(args, package, Guid.Parse(attachment.Key)))" Class="btn-margin">@package</MatButton>
+                <MatButton OnClick="@(args => Download(package, Guid.Parse(attachment.Key)))" Class="btn-margin">@package</MatButton>
             }
         }
 
@@ -100,9 +100,9 @@
 @code {
 
     [Parameter]
-    EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
+    public EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
 
-    protected void AddFile(UIMouseEventArgs evt)
+    protected void AddFile()
     {
         DocumentService.Files.Add(DocumentService.DefaultTxtFile);
     }
@@ -112,11 +112,11 @@
         await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.UpdateAttachment(demoFile));
     }
 
-    protected async Task Download(UIMouseEventArgs evt, Idfy.Signature.FileFormat fileFormat, Guid? documentItemId = null)
+    protected async Task Download(Idfy.Signature.FileFormat fileFormat, Guid? documentItemId = null)
     {
         try
         {
-            var url = $"{UriHelper.GetBaseUri()}api/Sign/{DocumentService.Document.DocumentId}/files?fileFormat={fileFormat}&env={EnvironmentService.CurrentEnvironment}";
+            var url = $"{UriHelper.BaseUri}api/Sign/{DocumentService.Document.DocumentId}/files?fileFormat={fileFormat}&env={EnvironmentService.CurrentEnvironment}";
 
             if (documentItemId != null)
                 url += $"&documentItemId={documentItemId}";

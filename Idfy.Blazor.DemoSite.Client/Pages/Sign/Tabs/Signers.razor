@@ -25,14 +25,14 @@
 @code {
     List<DemoSigner> SignerList;
     [Parameter]
-    EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
+    public EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
 
-    protected override async Task OnInitAsync()
+    protected override async Task OnInitializedAsync()
     {
         SignerList = DocumentService.Document.Signers;
     }
 
-    protected async Task AddSigner(UIMouseEventArgs e)
+    protected async Task AddSigner()
     {
         await OnExecuteWithErrorHandler.InvokeAsync( DocumentService.AddSigner());
     }

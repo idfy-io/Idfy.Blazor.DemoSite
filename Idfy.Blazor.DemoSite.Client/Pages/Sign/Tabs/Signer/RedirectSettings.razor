@@ -9,7 +9,7 @@
             <MatSelect Label="Select redirect mode" Value="@Signer.RedirectSettings.RedirectMode.ToString()" ValueChanged="@((value) => SetRedirectMode(Signer, value))" Outlined="true">
                 @foreach (RedirectMode redirectMode in Enum.GetValues(typeof(RedirectMode)))
                 {
-                <Option Value="@redirectMode.ToString()">@redirectMode.ToString()</Option>
+                <MatOption Value="@redirectMode.ToString()">@redirectMode.ToString()</MatOption>
                 }
             </MatSelect>
         </div>
@@ -36,7 +36,7 @@
 @code {
 
     [Parameter]
-    protected DemoSigner Signer { get; set; }
+    public DemoSigner Signer { get; set; }
 
     protected void SetRedirectMode(DemoSigner signer, string value)
     {

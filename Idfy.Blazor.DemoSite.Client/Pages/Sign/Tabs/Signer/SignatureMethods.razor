@@ -9,7 +9,7 @@
             <MatSelect Class="full-width no-margin" Label="Select mechanism" Value="@Signer.SignatureType.Mechanism.ToString()" ValueChanged="@((value) => SetMechanism(Signer, value))" Outlined="true">
                 @foreach (SignatureMechanism mechanism in Enum.GetValues(typeof(SignatureMechanism)))
                 {
-                    <Option Value="@mechanism.ToString()">@mechanism.ToString()</Option>
+                    <MatOption Value="@mechanism.ToString()">@mechanism.ToString()</MatOption>
                 }
             </MatSelect>
             </div>
@@ -38,7 +38,7 @@
     private SignatureMethod[] SignatureMethodList = (SignatureMethod[])Enum.GetValues(typeof(SignatureMethod));
 
     [Parameter]
-    protected DemoSigner Signer { get; set; }
+    public DemoSigner Signer { get; set; }
 
     protected void SetMechanism(DemoSigner signer, string value)
     {

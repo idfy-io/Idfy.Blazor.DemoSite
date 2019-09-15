@@ -1,0 +1,39 @@
+﻿@using Idfy.Blazor.DemoSite.Shared;
+@using Idfy.Signature;
+
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+            <Idfy.Blazor.DemoSite.Client.Components.Buttons.AppButton Theme="Static.Themes.BlueIsh" OnClick="@((args) => this.dialogOpen = true)">
+                View / configure extra info and addons
+            </Idfy.Blazor.DemoSite.Client.Components.Buttons.AppButton>
+        </div>
+    </div>
+</div>
+
+
+<MatDialog Class="large-dialog" @bind-IsOpen="@dialogOpen">
+    <MatDialogTitle>Signer Extras</MatDialogTitle>
+    <MatDialogContent Class="large-dialog-content">
+
+      
+    </MatDialogContent>
+    <MatDialogActions>
+        <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">                    
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
+                    <MatButton OnClick="@((args) => this.dialogOpen = false)">OK</MatButton>
+                </div>
+            </div>
+        </div>
+    </MatDialogActions>
+</MatDialog>
+
+
+@code {
+    bool dialogOpen = false;
+    [Parameter]
+    public DemoSigner Signer { get; set; }
+}

@@ -76,7 +76,7 @@
             <RedirectSettings Signer="@SignerData"></RedirectSettings>
             <SignerUi Signer="@SignerData"></SignerUi>
             <AdvancedSignerOpts SignerData="@SignerData"></AdvancedSignerOpts>
-
+            <SignerExtras Signer="@SignerData"></SignerExtras>
         </div>
 
     </MatExpansionPanelDetails>
@@ -144,10 +144,10 @@
     bool signatureDialogIsOpen = false;
 
     [Parameter]
-    protected DemoSigner SignerData { get; set; }
+    public DemoSigner SignerData { get; set; }
 
     [Parameter]
-    EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
+    public EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
 
     private void SetOrder(DemoSigner Signer, decimal? value)
     {
@@ -157,29 +157,29 @@
         }
     }
 
-    private async Task Sign(UIMouseEventArgs args)
+    private async Task Sign()
     {
         await JsRuntime.InvokeAsync<object>("window.blazorExtras.openUrlExternal", SignerData.Url);
     }
 
-    private void ViewDocumentSignature(UIMouseEventArgs e)
+    private void ViewDocumentSignature()
     {
         this.signatureDialogIsOpen = true;
     }
 
-    private void CloseDocumentSignature(UIMouseEventArgs e)
+    private void CloseDocumentSignature()
     {
         this.signatureDialogIsOpen = false;
     }
 
-    private async Task DeleteSignature(UIMouseEventArgs e)
+    private async Task DeleteSignature()
     {
-        this.CloseDocumentSignature(e);
+        this.CloseDocumentSignature();
         await OnExecuteWithErrorHandler.InvokeAsync(this.DocumentService.DeleteSignature(SignerData));
         await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.GetDocument());
     }
 
-    private async Task DeleteSigner(UIMouseEventArgs e)
+    private async Task DeleteSigner()
     {
         //if(Guid.Empty.Equals(SignerData.Id))
         //{
@@ -191,7 +191,7 @@
         //}
     }
 
-    private async Task UpdateSigner(UIMouseEventArgs e)
+    private async Task UpdateSigner()
     {
         await OnExecuteWithErrorHandler.InvokeAsync(Task.Run(async () => {
             var result = await DocumentService.AddOrUpdateSigner(SignerData);

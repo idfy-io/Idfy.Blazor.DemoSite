@@ -1,6 +1,7 @@
 @using Services;
 @using Idfy.Blazor.DemoSite.Shared;
 @using Idfy.Signature;
+@using Static;
 @inject DocumentService DocumentService;
 
 
@@ -20,7 +21,7 @@
                                 @foreach (var signer in Document.Signers)
                                 {
                                     <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
-                                        @SignerName(signer)
+                                        @Helpers.SignerName(signer)
                                     </div>
                                     <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
                                         <MatSelect Label="Notification setting" Value="@GetNotificationSetting(signer, type).ToString()" ValueChanged="@((value) => SetNotificationSetting(signer, type, value))" Outlined="true">
@@ -100,7 +101,7 @@
 
     private DemoDocument Document;
 
-    protected override async Task OnInitAsync()
+    protected override async Task OnInitializedAsync()
     {
         Document = DocumentService.Document;
 
@@ -121,16 +122,6 @@
             };
         }
     }
-
-    private string SignerName(DemoSigner signer)
-    {
-        var name = signer.SignerInfo.FirstName + " " + signer.SignerInfo.LastName;
-
-        if (string.IsNullOrWhiteSpace(name))
-            name = "Signer with no name";
-        return name;
-    }
-
 
     private void SetNotificationSetting(DemoSigner signer, NotificationType type, string value)
     {

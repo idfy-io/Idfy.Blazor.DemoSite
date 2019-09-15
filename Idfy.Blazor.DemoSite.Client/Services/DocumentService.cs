@@ -18,11 +18,11 @@ namespace Idfy.Blazor.DemoSite.Client.Services
 
         private readonly EnvironmentService environmentService;
         private HttpClient httpClient;
-        private readonly IUriHelper uriHelper;
+        private readonly NavigationManager uriHelper;
         private bool uploadAttachments;
 
 
-        public DocumentService(EnvironmentService environmentService, HttpClient httpClient, IUriHelper uriHelper)
+        public DocumentService(EnvironmentService environmentService, HttpClient httpClient, NavigationManager uriHelper)
         {
             this.environmentService = environmentService;
             this.httpClient = httpClient;
@@ -119,7 +119,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
 
         public async Task<DemoSigner> AddOrUpdateSigner(DemoSigner signer)
         {
-            var uri = $"{uriHelper.GetBaseUri()}api/Sign/{Document.DocumentId}/AddSigner";
+            var uri = $"{uriHelper.BaseUri}api/Sign/{Document.DocumentId}/AddSigner";
 
             if (!signer.Id.Equals(Guid.Empty))
                 uri += $"?id={signer.Id}";
@@ -198,7 +198,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
 
         public async Task GetDocument(Guid? documentId = null)
         {
-            var result = await httpClient.GetAsync($"{uriHelper.GetBaseUri()}api/Sign/{documentId ?? Document.DocumentId}");
+            var result = await httpClient.GetAsync($"{uriHelper.BaseUri}api/Sign/{documentId ?? Document.DocumentId}");
             var resultAsString = await result.Content.ReadAsStringAsync();
             Console.WriteLine($"Status code: {result.StatusCode}");
             VerifySuccess(result, resultAsString);
@@ -225,7 +225,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             UpdateFiles(true);
             var doc = Newtonsoft.Json.JsonConvert.SerializeObject(this.Document);
 
-            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{uriHelper.GetBaseUri()}api/Sign/Update/{Document.DocumentId}")
+            var request = new HttpRequestMessage(new HttpMethod("PATCH"), $"{uriHelper.BaseUri}api/Sign/Update/{Document.DocumentId}")
             {
                 Content = new StringContent(doc, Encoding.UTF8, "application/json")
             };
@@ -243,7 +243,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
         {
             UpdateFiles();
             var doc = Newtonsoft.Json.JsonConvert.SerializeObject(this.Document);
-            var result = await httpClient.PostAsync($"{uriHelper.GetBaseUri()}api/Sign/Create", new StringContent(doc, Encoding.UTF8, "application/json"));
+            var result = await httpClient.PostAsync($"{uriHelper.BaseUri}api/Sign/Create", new StringContent(doc, Encoding.UTF8, "application/json"));
             var resultAsString = await result.Content.ReadAsStringAsync();
 
             VerifySuccess(result, resultAsString);
@@ -269,7 +269,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             HttpResponseMessage result;
             string resultAsString;
             int attempt = 0;
-            var url = $"{uriHelper.GetBaseUri()}api/Sign/{Document.DocumentId}/Attachment";
+            var url = $"{uriHelper.BaseUri}api/Sign/{Document.DocumentId}/Attachment";
 
             if(attachment.Id != null && attachment.Id !=  Document.DocumentId)
                 url += $"?id={attachment.Id}";
@@ -298,7 +298,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 do
                 {
                     await Task.Delay(1000 * attempt);
-                    result = await httpClient.GetAsync($"{uriHelper.GetBaseUri()}api/Sign/{Document.DocumentId}/Attachment/{attachment.Key}");
+                    result = await httpClient.GetAsync($"{uriHelper.BaseUri}api/Sign/{Document.DocumentId}/Attachment/{attachment.Key}");
                     resultAsString = await result.Content.ReadAsStringAsync();
                     attempt++;
                 } while (attempt < 5 && !result.IsSuccessStatusCode); // Do some retries in case document not ready
@@ -334,7 +334,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
 
         public async Task DeleteSignature(Signer signer)
         {
-            var result = await httpClient.DeleteAsync($"{uriHelper.GetBaseUri()}api/Sign/{Document.DocumentId}/DeleteSignature/{signer.Id}");
+            var result = await httpClient.DeleteAsync($"{uriHelper.BaseUri}api/Sign/{Document.DocumentId}/DeleteSignature/{signer.Id}");
             var resultAsString = await result.Content.ReadAsStringAsync();
 
             VerifySuccess(result, resultAsString);

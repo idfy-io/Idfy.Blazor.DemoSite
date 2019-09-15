@@ -4,20 +4,20 @@
 
 @code {
     [Parameter]
-    protected MatTheme Theme { get; set; }
+    public MatTheme Theme { get; set; }
 
     [Parameter]
-    private RenderFragment ChildContent { get; set; }
+    public RenderFragment ChildContent { get; set; }
 
     [Parameter]
-    private EventCallback<UIMouseEventArgs> OnClick { get; set; }
+    public EventCallback<Microsoft.AspNetCore.Components.Web.MouseEventArgs> OnClick { get; set; }
 
     [Parameter]
-    private string Class { get; set; }
+    public string Class { get; set; }
 
     [Parameter]
-    private string Icon { get; set; }
+    public string Icon { get; set; }
 
     [Parameter]
-    private string TrailingIcon { get; set; }
+    public string TrailingIcon { get; set; }
 }

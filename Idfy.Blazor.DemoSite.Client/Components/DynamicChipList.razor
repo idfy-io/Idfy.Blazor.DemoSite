@@ -16,13 +16,13 @@
     private string NewValue;
 
     [Parameter]
-    private string Title { get; set; }
+    public string Title { get; set; }
 
     [Parameter]
-    private string Icon { get; set; }
+    public string Icon { get; set; }
 
     [Parameter]
-    private List<string> ChipList { get; set; }
+    public List<string> ChipList { get; set; }
 
     private void AddChip()
     {

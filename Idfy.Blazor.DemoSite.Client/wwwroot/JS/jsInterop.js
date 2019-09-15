@@ -1,5 +1,18 @@
 ﻿window.blazorExtras = {
-    readUploadedFileAsText: function (fileInputId) {
+
+    setLocalStorage: (key, value) => {
+        window.localStorage.setItem(key, value);
+    },
+
+    getLocalStorage: (key) => {
+        return window.localStorage.getItem(key);
+    },
+
+    clearLocalStorage: (key) => {
+        window.localStorage.clear();
+    },
+
+    readUploadedFileAsText: (fileInputId) => {
 
         return new Promise((resolve, reject) => {
             const file = document.getElementById(fileInputId).files[0];
@@ -20,7 +33,7 @@
             };
         });
     },
-    openUrlExternal: function (url) {
+    openUrlExternal: (url) => {
         // Electron
         var isElectron = window && window.process && window.process.type;
         if (isElectron) {

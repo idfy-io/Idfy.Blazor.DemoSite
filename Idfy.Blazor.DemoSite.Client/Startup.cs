@@ -1,4 +1,3 @@
-using Cloudcrate.AspNetCore.Blazor.Browser.Storage;
 using Idfy.Blazor.DemoSite.Client.Services;
 using Microsoft.AspNetCore.Components.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,7 +12,6 @@ namespace Idfy.Blazor.DemoSite.Client
             services.AddSingleton<HttpClient>();
             services.AddSingleton<DocumentService>();
             services.AddSingleton<EnvironmentService>();
-            services.AddStorage();
         }
 
         public void Configure(IComponentsApplicationBuilder app)

@@ -32,7 +32,7 @@
     Language[] languages = (Language[])Enum.GetValues(typeof(Language));
 
     [Parameter]
-    protected DemoSigner Signer { get; set; }
+    public DemoSigner Signer { get; set; }
 
     protected void Set(Spinner value)
     {
