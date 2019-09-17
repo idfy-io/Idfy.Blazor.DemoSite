@@ -13,15 +13,44 @@
 
 
 <MatDialog Class="large-dialog" @bind-IsOpen="@dialogOpen">
-    <MatDialogTitle>Signer Extras</MatDialogTitle>
     <MatDialogContent Class="large-dialog-content">
-
-      
+        <h3>Extra info</h3>
+        <p>Currently ordered</p>
+        @if (Signer.ExtraInfo?.Types != null)
+        {
+            @foreach (var info in Signer.ExtraInfo.Types)
+            {
+                var subAndHref = GetSubtitleAndHref(info);
+                <MatList>
+                    <MatListItem Href="@subAndHref.Item2">
+                        <MatListItemText>
+                            <MatListItemPrimaryText>@info.ToString()</MatListItemPrimaryText>
+                            <MatListItemSecondaryText>@subAndHref.Item1</MatListItemSecondaryText>
+                        </MatListItemText>
+                    </MatListItem>
+                </MatList>
+            }
+        }
+        else
+        {
+            <p>Nothing is ordered here..</p>
+        }
+    <div class="app-padding">
+        <MatSelect Outlined="true" HelperText="Pick a new extra info to order" Label="Add extra info" ValueChanged="AddExtraInfo">
+            <MatOption Value=""></MatOption>
+            @foreach (var type in ((ExtraInfoSignerType[])Enum.GetValues(typeof(ExtraInfoSignerType))).Where(e => Signer.ExtraInfo?.Types == null
+            || !Signer.ExtraInfo.Types.Contains(e)))
+            {
+                <MatOption Value="@type.ToString()">@type.ToString()</MatOption>
+            }
+        </MatSelect>
+    </div>
+   
     </MatDialogContent>
     <MatDialogActions>
         <div class="mat-layout-grid">
             <div class="mat-layout-grid-inner">
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">                    
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
                 </div>
                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
                     <MatButton OnClick="@((args) => this.dialogOpen = false)">OK</MatButton>
@@ -36,4 +65,39 @@
     bool dialogOpen = false;
     [Parameter]
     public DemoSigner Signer { get; set; }
+
+
+    (string, string) GetSubtitleAndHref(ExtraInfoSignerType type)
+    {
+        if(Signer.Links != null)
+        {
+            var match = Signer.Links.FirstOrDefault(l => l.Rel == type.ToString());
+
+            if(!string.IsNullOrWhiteSpace(match?.Href))
+            {
+                return ("Completed, click to download result!", match.Href );
+            }
+            if (!string.IsNullOrWhiteSpace(match?.Error))
+            {
+                return (match.Error, null);
+            }
+        }
+        return ("Waiting for result..", null);
+    }
+
+    void AddExtraInfo(string value)
+    {
+        if(Signer.ExtraInfo?.Types == null)
+        {
+            Signer.ExtraInfo = new ExtraInfoSignerRequest()
+            {
+                Types = new List<ExtraInfoSignerType>()
+            };
+        }
+
+        if(Enum.TryParse(value, out ExtraInfoSignerType result))
+        {
+            Signer.ExtraInfo.Types.Add(result);
+        }
+    }
 }

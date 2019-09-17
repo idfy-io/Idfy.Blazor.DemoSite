@@ -11,18 +11,16 @@
 <MatProgressBar Closed="@loaded" Indeterminate="true"></MatProgressBar>
 @if (loaded)
 {
-    <div class="d-flex align-items-center">
-
+<div class="d-flex align-items-center">
+    @if (string.IsNullOrWhiteSpace(this.DocumentService.EditSigner))
+    {
         <div id="create-doc-container" Class="app-container app-padding">
             <MatTabGroup>
                 <MatTab Label="General">
-                    <General></General>
+                    <General OnExecuteWithErrorHandler="@(t =>  ExecuteWithErrorHandling(async() => await t ))"></General>
                 </MatTab>
                 <MatTab Label="Files">
                     <Files OnExecuteWithErrorHandler="@(t =>  ExecuteWithErrorHandling(async() => await t ))"></Files>
-                </MatTab>
-                <MatTab Label="Signers">
-                    <Signers OnExecuteWithErrorHandler="@(t =>  ExecuteWithErrorHandling(async() => await t ))"></Signers>
                 </MatTab>
                 <MatTab Label="Advanced">
                     <Advanced></Advanced>
@@ -59,20 +57,27 @@
                     <MatButton OnClick="@CloseDialog">OK</MatButton>
                 </MatDialogActions>
             </MatDialog>
-
         </div>
+    }
+    else
+    {
+        <Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signer.Signer OnExecuteWithErrorHandler="@(t =>  ExecuteWithErrorHandling(async() => await t ))">
+        </Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signer.Signer>
+    }
 
-    </div>
+</div>
 }
 
 
 @code {
-    bool loaded = true;
+    bool loaded = false;
     bool dialogIsOpen = false;
     string error = "";
 
     protected override async Task OnInitializedAsync()
     {
+        DocumentService.OnChange += this.StateHasChanged;
+
         var currentDoc = await JSRuntime.GetLocalStorage("document");
         var currentEnv = await JSRuntime.GetLocalStorage("env");
 
@@ -83,7 +88,10 @@
         {
             await this.Refresh(Guid.Parse(currentDoc), true);
         }
-
+        else
+        {
+            loaded = true;
+        }
     }
 
     void CloseDialog()
@@ -96,9 +104,9 @@
         await ExecuteWithErrorHandling(async () =>
         {
             loaded = false;
-            await Task.Delay(500); //Just a temp workaround to reset view
             await JSRuntime.ClearLocalStorage();
             DocumentService.Init();
+            this.StateHasChanged();
             loaded = true;
         });
     }

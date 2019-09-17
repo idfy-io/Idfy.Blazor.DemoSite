@@ -1,0 +1,159 @@
+﻿@using Blazor.DemoSite.Shared;
+@using Idfy.Blazor.DemoSite.Client.Components.Buttons;
+@using Idfy.Blazor.DemoSite.Client.Pages.Sign.Tabs.Signer;
+@using Services;
+
+@inject DocumentService DocumentService;
+@inject IJSRuntime JsRuntime;
+
+<p>Signers</p>
+
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+
+        @foreach (var signer in Signers)
+        {
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                <MatCard Class="app-padding">
+
+                    <MatCardContent Class="app-padding">
+                        <p>@(signer.SignerInfo.FirstName ?? "Anonymous") @(signer.SignerInfo.LastName ?? "Signer")</p>
+                        @if (@signer?.DocumentSignature != null)
+                        {
+                            <div class="doc-status">
+                                <b>Signed with</b>
+                                <p>
+                                @signer.DocumentSignature.SignatureMethod.ToString() <br />
+                                @signer.DocumentSignature.FullName <br />
+                                @signer.DocumentSignature.SignatureMethodUniqueId <br />
+                                </p>
+                            </div>
+
+                        }
+                        <MatChipSet>
+                            <MatChip Label="@signer.SignatureType.Mechanism.ToString()"></MatChip>
+                            <MatChip Label="@signer.RedirectSettings.RedirectMode.ToString()" LeadingIcon="double_arrow"></MatChip>
+                        </MatChipSet>
+                    </MatCardContent>
+                    <MatCardActions>
+                        <AppButton Theme="Static.Themes.BlueIsh" OnClick="@(() => DocumentService.EditSigner = signer.ExternalSignerId)" Icon="edit">Edit</AppButton>
+                        @if (!string.IsNullOrWhiteSpace(signer.Url))
+                        {
+                            <AppButton OnClick="@(() => Sign(signer))">Sign</AppButton>
+                        }
+                        else if (signer.DocumentSignature != null)
+                        {
+                            <MatButton Raised="true" OnClick="@(() => ViewDocumentSignature(signer))">View signature</MatButton>
+                        }
+                    </MatCardActions>
+                </MatCard>
+            </div>
+
+        }
+    </div>
+</div>
+@if (DocumentService.Document.Status?.DocumentStatus != Signature.DocumentStatus.Signed)
+{
+    <MatButton Class="full-width btn-margin" OnClick="@AddSigner" TrailingIcon="tag_faces">Add signer</MatButton>
+}
+<MatDialog Class="large-dialog" @bind-IsOpen="@signatureDialogIsOpen">
+    <MatDialogTitle>Signature data</MatDialogTitle>
+    <MatDialogContent Class="large-dialog-content">
+
+        @if (CurrentSigner?.DocumentSignature != null)
+        {
+            var signature = CurrentSigner.DocumentSignature;
+            <div class="mat-layout-grid">
+                <div class="mat-layout-grid-inner">
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">Name</h3>
+                        <p>Full: @signature.FullName</p>
+                        <p>Last: @signature.LastName</p>
+                        <p>Middle: @signature.MiddleName</p>
+                        <p>First: @signature.FirstName</p>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">Signature method</h3>
+                        <p>Type: @signature.SignatureMethod </p>
+                        <p>Unique Id: @signature.SignatureMethodUniqueId</p>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">Date of birth</h3>
+                        <p>@(signature.DateOfBirth ?? "Not set") </p>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">National Id / Soc sec</h3>
+                        <p>Country code: @(signature.SocialSecurityNumber?.CountryCode ?? "Not set")  </p>
+                        <p>Value: @(signature.SocialSecurityNumber?.Value ?? "Not set") </p>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">Signed time</h3>
+                        <p>@signature.SignedTime UTC</p>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">Client Ip</h3>
+                        <p>@signature.ClientIp </p>
+                    </div>
+                </div>
+            </div>
+            <h3>Resources</h3>
+            <LinksList Signer="CurrentSigner"></LinksList>
+        }
+    </MatDialogContent>
+    <MatDialogActions>
+        <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
+                    <AppButton Theme="Static.Themes.Warn" OnClick="@DeleteSignature">Delete signature</AppButton>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
+                    <MatButton OnClick="@CloseDocumentSignature">OK</MatButton>
+                </div>
+            </div>
+        </div>
+    </MatDialogActions>
+</MatDialog>
+
+
+@code {
+    bool signatureDialogIsOpen;
+
+    [Parameter]
+    public EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
+
+    [Parameter]
+    public EventCallback<string> EditSigner { get; set; }
+
+    [Parameter]
+    public List<DemoSigner> Signers { get; set; }
+    private DemoSigner CurrentSigner;
+
+
+    private async Task Sign(DemoSigner signer)
+    {
+        await JsRuntime.InvokeAsync<object>("window.blazorExtras.openUrlExternal", signer.Url);
+    }
+
+    private void ViewDocumentSignature(DemoSigner signer)
+    {
+        CurrentSigner = signer;
+        this.signatureDialogIsOpen = true;
+    }
+
+    private void CloseDocumentSignature()
+    {
+        this.signatureDialogIsOpen = false;
+    }
+
+    private async Task DeleteSignature()
+    {
+        this.CloseDocumentSignature();
+        await OnExecuteWithErrorHandler.InvokeAsync(this.DocumentService.DeleteSignature(CurrentSigner));
+        await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.GetDocument());
+    }
+
+    protected async Task AddSigner()
+    {
+        await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.AddSigner());
+    }
+}

@@ -1,8 +1,10 @@
 <MatThemeProvider Theme="@(Theme ?? Static.Themes.Success)">
-    <MatButton Class="@Class" OnClick="@OnClick" Raised="true" Icon="@Icon" TrailingIcon="@TrailingIcon">@ChildContent</MatButton>
+    <MatButton Class="@($"{@Class ?? "" } {defaultClass}")" OnClick="@OnClick" Raised="true" Icon="@Icon" TrailingIcon="@TrailingIcon">@ChildContent</MatButton>
 </MatThemeProvider>
 
 @code {
+
+        string defaultClass = "btn-margin";
     [Parameter]
     public MatTheme Theme { get; set; }
 

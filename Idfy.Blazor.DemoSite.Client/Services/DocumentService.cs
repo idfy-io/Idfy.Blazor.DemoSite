@@ -15,12 +15,22 @@ namespace Idfy.Blazor.DemoSite.Client.Services
     {
         public DemoDocument Document { get; set; }
         public List<DemoSite.Shared.DemoFile> Files { get; set; }
+        private string extSignerId;
+        public string EditSigner { get => extSignerId; 
+            set
+            {
+                extSignerId = value;
+                NotifyStateChanged();
+            }
+        }
+
+        public event Action OnChange;
 
         private readonly EnvironmentService environmentService;
         private HttpClient httpClient;
         private readonly NavigationManager uriHelper;
         private bool uploadAttachments;
-
+        private void NotifyStateChanged() => OnChange?.Invoke();
 
         public DocumentService(EnvironmentService environmentService, HttpClient httpClient, NavigationManager uriHelper)
         {
@@ -216,6 +226,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 Base64ContentStyleSheet = Document.DataToSign.Base64ContentStyleSheet
             });
             await GetAttachments();
+            this.NotifyStateChanged();
         }
 
         public async Task UpdateDocument()

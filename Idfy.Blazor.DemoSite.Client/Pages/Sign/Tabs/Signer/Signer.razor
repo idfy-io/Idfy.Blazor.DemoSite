@@ -5,84 +5,75 @@
 @inject IJSRuntime JsRuntime;
 @inject DocumentService DocumentService;
 
+    <div class="container">
 
-<MatExpansionPanel>
-    <MatExpansionPanelSummary>
-        <MatExpansionPanelHeader>@(SignerData.SignerInfo.FirstName ?? "Anonymous") @(SignerData.SignerInfo.LastName ?? "Signer")</MatExpansionPanelHeader>
-        <MatExpansionPanelSubHeader>
-            @if (!string.IsNullOrWhiteSpace(SignerData.Url))
-            {
-            <AppButton Class="full-width" OnClick="Sign">Sign</AppButton>
-            }
-            else if (SignerData.DocumentSignature != null)
-            {
-            <MatButton Class="full-width" Raised="true" OnClick="ViewDocumentSignature">View signature</MatButton>
-            }
-            else
-            {
-            <MatIcon Icon="tag_faces"></MatIcon>
-            }
-        </MatExpansionPanelSubHeader>
-    </MatExpansionPanelSummary>
+        <AppButton Icon="home" Theme="Static.Themes.BlueIsh" OnClick="@(() => this.DocumentService.EditSigner = null)">Close signer edit</AppButton>
+        <p>You are currently viewing / editing signer with ext. Id @SignerData?.ExternalSignerId</p>
 
-    <MatExpansionPanelDetails Class="app-expansion-panel">
-        @if(Helpers.IsEditable(DocumentService.Document))
-        {
-        <div class="mat-layout-grid">
+        <MatCard>
+            <div class="app-padding">
+                @if (SignerData != null)
+                {
+                    @if (Helpers.IsEditable(DocumentService.Document))
+                    {
+                        <div class="mat-layout-grid">
 
-            <div class="mat-layout-grid-inner">
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
-                    Id: @SignerData.Id
-                </div>
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
-                    <AppButton Class="full-width" Theme="Static.Themes.Warn">Delete signer</AppButton>
-                </div>
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
-                    <MatButton Outlined="true" Class="full-width" OnClick="UpdateSigner">Save changes</MatButton>
-                </div>
+                            <div class="mat-layout-grid-inner">
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
+                                    Id: @SignerData.Id
+                                </div>
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
+                                    <AppButton Class="full-width" Theme="Static.Themes.Warn">Delete signer</AppButton>
+                                </div>
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
+                                    <MatButton Outlined="true" Class="full-width" OnClick="UpdateSigner">Save changes</MatButton>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <h3 class="app-title">Name</h3>
+                    <div class="mat-layout-grid">
+                        <div class="mat-layout-grid-inner">
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <MatTextField Icon="perm_identity" @bind-Value="@SignerData.SignerInfo.FirstName" Label="Firstname" Outlined="true"></MatTextField>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <MatTextField Icon="perm_identity" @bind-Value="@SignerData.SignerInfo.LastName" Label="Lastname" Outlined="true"></MatTextField>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="app-title">Contact</h3>
+                    <div class="mat-layout-grid">
+                        <div class="mat-layout-grid-inner">
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <MatTextField Icon="email" @bind-Value="@SignerData.SignerInfo.Email" Label="Email" Outlined="true"></MatTextField>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <MatTextField Icon="language" @bind-Value="@SignerData.SignerInfo.Mobile.CountryCode" Label="Country code" Outlined="true"></MatTextField>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <MatTextField Icon="smartphone" @bind-Value="@SignerData.SignerInfo.Mobile.Number" Label="Number" Outlined="true"></MatTextField>
+                            </div>
+                        </div>
+                    </div>
+
+                    <SignatureMethods Signer="@SignerData"></SignatureMethods>
+                    <RedirectSettings Signer="@SignerData"></RedirectSettings>
+                    <SignerUi Signer="@SignerData"></SignerUi>
+                    <AdvancedSignerOpts SignerData="@SignerData"></AdvancedSignerOpts>
+                    <SignerExtras Signer="@SignerData"></SignerExtras>
+
+
+                }
+                else
+                {
+                    <p>Signer not found</p>
+                }
             </div>
-        </div>
-        }
-
-
-        <div class="container">
-            <h3 class="app-title">Name</h3>
-            <div class="mat-layout-grid">
-                <div class="mat-layout-grid-inner">
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                        <MatTextField Icon="perm_identity" @bind-Value="@SignerData.SignerInfo.FirstName" Label="Firstname" Outlined="true"></MatTextField>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                        <MatTextField Icon="perm_identity" @bind-Value="@SignerData.SignerInfo.LastName" Label="Lastname" Outlined="true"></MatTextField>
-                    </div>
-                </div>
-            </div>
-            <h3 class="app-title">Contact</h3>
-            <div class="mat-layout-grid">
-                <div class="mat-layout-grid-inner">
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                        <MatTextField Icon="email" @bind-Value="@SignerData.SignerInfo.Email" Label="Email" Outlined="true"></MatTextField>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                        <MatTextField Icon="language" @bind-Value="@SignerData.SignerInfo.Mobile.CountryCode" Label="Country code" Outlined="true"></MatTextField>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
-                        <MatTextField Icon="smartphone" @bind-Value="@SignerData.SignerInfo.Mobile.Number" Label="Number" Outlined="true"></MatTextField>
-                    </div>
-                </div>
-            </div>
-
-            <SignatureMethods Signer="@SignerData"></SignatureMethods>
-            <RedirectSettings Signer="@SignerData"></RedirectSettings>
-            <SignerUi Signer="@SignerData"></SignerUi>
-            <AdvancedSignerOpts SignerData="@SignerData"></AdvancedSignerOpts>
-            <SignerExtras Signer="@SignerData"></SignerExtras>
-        </div>
-
-    </MatExpansionPanelDetails>
-
-</MatExpansionPanel>
-
+        </MatCard>
+       
+    </div>
 <MatDialog Class="large-dialog" @bind-IsOpen="@signatureDialogIsOpen">
     <MatDialogTitle>Signature data</MatDialogTitle>
     <MatDialogContent Class="large-dialog-content">
@@ -90,39 +81,41 @@
         @if (SignerData?.DocumentSignature != null)
         {
             var signature = SignerData.DocumentSignature;
-        <div class="mat-layout-grid">
-            <div class="mat-layout-grid-inner">
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                    <h3 class="app-title">Name</h3>
-                    <p>Full: @signature.FullName</p>
-                    <p>Last: @signature.LastName</p>
-                    <p>Middle: @signature.MiddleName</p>
-                    <p>First: @signature.FirstName</p>
-                </div>
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                    <h3 class="app-title">Signature method</h3>
-                    <p>Type: @signature.SignatureMethod </p>
-                    <p>Unique Id: @signature.SignatureMethodUniqueId</p>
-                </div>
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                    <h3 class="app-title">Date of birth</h3>
-                    <p>@(signature.DateOfBirth ?? "Not set") </p>
-                </div>
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                    <h3 class="app-title">National Id / Soc sec</h3>
-                    <p>Country code: @(signature.SocialSecurityNumber?.CountryCode ?? "Not set")  </p>
-                    <p>Value: @(signature.SocialSecurityNumber?.Value ?? "Not set") </p>
-                </div>
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                    <h3 class="app-title">Signed time</h3>
-                    <p>@signature.SignedTime UTC</p>
-                </div>
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                    <h3 class="app-title">Client Ip</h3>
-                    <p>@signature.ClientIp </p>
+            <div class="mat-layout-grid">
+                <div class="mat-layout-grid-inner">
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">Name</h3>
+                        <p>Full: @signature.FullName</p>
+                        <p>Last: @signature.LastName</p>
+                        <p>Middle: @signature.MiddleName</p>
+                        <p>First: @signature.FirstName</p>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">Signature method</h3>
+                        <p>Type: @signature.SignatureMethod </p>
+                        <p>Unique Id: @signature.SignatureMethodUniqueId</p>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">Date of birth</h3>
+                        <p>@(signature.DateOfBirth ?? "Not set") </p>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">National Id / Soc sec</h3>
+                        <p>Country code: @(signature.SocialSecurityNumber?.CountryCode ?? "Not set")  </p>
+                        <p>Value: @(signature.SocialSecurityNumber?.Value ?? "Not set") </p>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">Signed time</h3>
+                        <p>@signature.SignedTime UTC</p>
+                    </div>
+                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                        <h3 class="app-title">Client Ip</h3>
+                        <p>@signature.ClientIp </p>
+                    </div>
                 </div>
             </div>
-        </div>
+            <h3>Resources</h3>
+            <LinksList Signer="SignerData"></LinksList>
         }
     </MatDialogContent>
     <MatDialogActions>
@@ -143,11 +136,17 @@
 @code {
     bool signatureDialogIsOpen = false;
 
-    [Parameter]
+    //  [Parameter]
     public DemoSigner SignerData { get; set; }
 
     [Parameter]
     public EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.SignerData = this.DocumentService.Document.Signers.FirstOrDefault(s =>
+        s.ExternalSignerId == DocumentService.EditSigner);
+    }
 
     private void SetOrder(DemoSigner Signer, decimal? value)
     {
@@ -193,7 +192,8 @@
 
     private async Task UpdateSigner()
     {
-        await OnExecuteWithErrorHandler.InvokeAsync(Task.Run(async () => {
+        await OnExecuteWithErrorHandler.InvokeAsync(Task.Run(async () =>
+        {
             var result = await DocumentService.AddOrUpdateSigner(SignerData);
             SignerData = result;
         }));

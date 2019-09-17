@@ -1,0 +1,34 @@
+﻿@using Blazor.DemoSite.Shared;
+
+
+@if (Signer.Links != null || Signer.Links.Any())
+{
+    <MatList>
+        @foreach (var link in Signer.Links)
+        {
+            <MatListItem Href="@link.Href">
+                <MatListItemText>
+                    <MatListItemPrimaryText>@link.Rel</MatListItemPrimaryText>
+                    <MatListItemSecondaryText>
+                        @(string.IsNullOrWhiteSpace(link.Error) ?
+                          (string.IsNullOrWhiteSpace(link.Href) ? "Waiting for result" : "Completed, click to download!")
+                          : link.Error)
+                    </MatListItemSecondaryText>
+                </MatListItemText>
+            </MatListItem>
+        }
+    </MatList>
+
+}
+else
+{
+    <p>No data..</p>
+}
+
+
+@code {
+
+    [Parameter]
+    public DemoSigner Signer { get; set; }
+
+}

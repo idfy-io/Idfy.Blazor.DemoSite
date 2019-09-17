@@ -18,7 +18,7 @@
     <MatTextField Icon="local_phone" @bind-Value="@Document.ContactDetails.Phone" Label="Phone" Outlined="true"></MatTextField>
     <MatTextField Icon="email" @bind-Value="@Document.ContactDetails.Email" Label="Email" Outlined="true"></MatTextField>
     <MatTextField Icon="home" @bind-Value="@Document.ContactDetails.Url" Label="Url" Outlined="true"></MatTextField>
-
+    <SignersList OnExecuteWithErrorHandler="OnExecuteWithErrorHandler" Signers="Document.Signers"></SignersList>
 </div>
 
 
@@ -26,8 +26,14 @@
 @code {
 
     protected DemoDocument Document;
+
+    [Parameter]
+    public EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         Document = DocumentService.Document;
     }
+
+   
 }
