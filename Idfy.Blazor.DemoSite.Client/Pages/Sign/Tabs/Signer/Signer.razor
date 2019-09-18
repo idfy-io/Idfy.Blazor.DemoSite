@@ -21,10 +21,7 @@
                             <div class="mat-layout-grid-inner">
                                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
                                     Id: @SignerData.Id
-                                </div>
-                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
-                                    <AppButton Class="full-width" Theme="Static.Themes.Warn">Delete signer</AppButton>
-                                </div>
+                                </div>                              
                                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
                                     <MatButton Outlined="true" Class="full-width" OnClick="UpdateSigner">Save changes</MatButton>
                                 </div>
@@ -74,67 +71,8 @@
         </MatCard>
        
     </div>
-<MatDialog Class="large-dialog" @bind-IsOpen="@signatureDialogIsOpen">
-    <MatDialogTitle>Signature data</MatDialogTitle>
-    <MatDialogContent Class="large-dialog-content">
-
-        @if (SignerData?.DocumentSignature != null)
-        {
-            var signature = SignerData.DocumentSignature;
-            <div class="mat-layout-grid">
-                <div class="mat-layout-grid-inner">
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Name</h3>
-                        <p>Full: @signature.FullName</p>
-                        <p>Last: @signature.LastName</p>
-                        <p>Middle: @signature.MiddleName</p>
-                        <p>First: @signature.FirstName</p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Signature method</h3>
-                        <p>Type: @signature.SignatureMethod </p>
-                        <p>Unique Id: @signature.SignatureMethodUniqueId</p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Date of birth</h3>
-                        <p>@(signature.DateOfBirth ?? "Not set") </p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">National Id / Soc sec</h3>
-                        <p>Country code: @(signature.SocialSecurityNumber?.CountryCode ?? "Not set")  </p>
-                        <p>Value: @(signature.SocialSecurityNumber?.Value ?? "Not set") </p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Signed time</h3>
-                        <p>@signature.SignedTime UTC</p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Client Ip</h3>
-                        <p>@signature.ClientIp </p>
-                    </div>
-                </div>
-            </div>
-            <h3>Resources</h3>
-            <LinksList Signer="SignerData"></LinksList>
-        }
-    </MatDialogContent>
-    <MatDialogActions>
-        <div class="mat-layout-grid">
-            <div class="mat-layout-grid-inner">
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-10">
-                    <AppButton Theme="Static.Themes.Warn" OnClick="@DeleteSignature">Delete signature</AppButton>
-                </div>
-                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
-                    <MatButton OnClick="@CloseDocumentSignature">OK</MatButton>
-                </div>
-            </div>
-        </div>
-    </MatDialogActions>
-</MatDialog>
-
 
 @code {
-    bool signatureDialogIsOpen = false;
 
     //  [Parameter]
     public DemoSigner SignerData { get; set; }
@@ -146,48 +84,6 @@
     {
         this.SignerData = this.DocumentService.Document.Signers.FirstOrDefault(s =>
         s.ExternalSignerId == DocumentService.EditSigner);
-    }
-
-    private void SetOrder(DemoSigner Signer, decimal? value)
-    {
-        if (value != null)
-        {
-            Signer.Order = (int)value.Value;
-        }
-    }
-
-    private async Task Sign()
-    {
-        await JsRuntime.InvokeAsync<object>("window.blazorExtras.openUrlExternal", SignerData.Url);
-    }
-
-    private void ViewDocumentSignature()
-    {
-        this.signatureDialogIsOpen = true;
-    }
-
-    private void CloseDocumentSignature()
-    {
-        this.signatureDialogIsOpen = false;
-    }
-
-    private async Task DeleteSignature()
-    {
-        this.CloseDocumentSignature();
-        await OnExecuteWithErrorHandler.InvokeAsync(this.DocumentService.DeleteSignature(SignerData));
-        await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.GetDocument());
-    }
-
-    private async Task DeleteSigner()
-    {
-        //if(Guid.Empty.Equals(SignerData.Id))
-        //{
-        //    this.DocumentService.Document.Signers =
-        //}
-        //else
-        //{
-        //    // TODO: IMPLEMENT
-        //}
     }
 
     private async Task UpdateSigner()

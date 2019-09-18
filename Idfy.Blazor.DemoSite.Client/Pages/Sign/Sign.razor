@@ -37,9 +37,9 @@
 
                 @if (DocumentService.Document.Status.DocumentStatus != Signature.DocumentStatus.Signed)
                 {
-                    <MatButton Outlined="true" Icon="update" OnClick="UpdateDocument">Save Changes</MatButton>
+                    <MatButton Class="btn-margin" Outlined="true" Icon="update" OnClick="UpdateDocument">Save Changes</MatButton>
                 }
-                <MatButton Outlined="true" Icon="clear" OnClick="Clear">Reset form</MatButton>
+                <MatButton Class="btn-margin " Outlined="true" Icon="clear" OnClick="Clear">Reset form</MatButton>
                 <AppButton Theme="Static.Themes.Success" Icon="pets" OnClick="CreateDocument">Create New</AppButton>
                 <AppButton Theme="Static.Themes.Success" Icon="refresh" OnClick="@(() => Refresh(null, false))">Refresh</AppButton>
             }

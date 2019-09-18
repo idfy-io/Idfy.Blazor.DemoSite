@@ -137,6 +137,10 @@ app {
     padding-top: 15px;
 }
 
+.signer-card {
+    height: 100%;
+}
+
 @media (min-width: 592px) {
     .large-dialog .mdc-dialog__surface {
         max-width: 80vw !important;

@@ -137,6 +137,22 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
             {
                 return BadRequest(e);
             }
+        } 
+        
+        [HttpDelete]
+        [Route("{documentId}/[action]/{signerId}")]
+        public async Task<IActionResult> DeleteSigner(Guid documentId, Guid signerId)
+        {
+            try
+            {
+                var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
+                await SignatureServiceWrapper.GetService(env).DeleteSignerAsync(documentId, signerId);
+                return NoContent();
+            }
+            catch (IdfyException e)
+            {
+                return BadRequest(e);
+            }
         }
 
         [HttpPost]

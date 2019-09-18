@@ -30,7 +30,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
         private HttpClient httpClient;
         private readonly NavigationManager uriHelper;
         private bool uploadAttachments;
-        private void NotifyStateChanged() => OnChange?.Invoke();
+        public void NotifyStateChanged() => OnChange?.Invoke();
 
         public DocumentService(EnvironmentService environmentService, HttpClient httpClient, NavigationManager uriHelper)
         {
@@ -264,6 +264,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             {
                 await UploadAttachments();
             }
+
             return Document;            
         }
 
@@ -346,6 +347,14 @@ namespace Idfy.Blazor.DemoSite.Client.Services
         public async Task DeleteSignature(Signer signer)
         {
             var result = await httpClient.DeleteAsync($"{uriHelper.BaseUri}api/Sign/{Document.DocumentId}/DeleteSignature/{signer.Id}");
+            var resultAsString = await result.Content.ReadAsStringAsync();
+
+            VerifySuccess(result, resultAsString);
+        }
+        
+        public async Task DeleteSigner(Guid signerId)
+        {
+            var result = await httpClient.DeleteAsync($"{uriHelper.BaseUri}api/Sign/{Document.DocumentId}/DeleteSigner/{signerId}");
             var resultAsString = await result.Content.ReadAsStringAsync();
 
             VerifySuccess(result, resultAsString);

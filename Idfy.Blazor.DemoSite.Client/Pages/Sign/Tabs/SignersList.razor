@@ -14,18 +14,18 @@
         @foreach (var signer in Signers)
         {
             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                <MatCard Class="app-padding">
+                <MatCard Class="app-padding signer-card">
 
-                    <MatCardContent Class="app-padding">
+                    <div Class="app-padding">
                         <p>@(signer.SignerInfo.FirstName ?? "Anonymous") @(signer.SignerInfo.LastName ?? "Signer")</p>
                         @if (@signer?.DocumentSignature != null)
                         {
                             <div class="doc-status">
                                 <b>Signed with</b>
                                 <p>
-                                @signer.DocumentSignature.SignatureMethod.ToString() <br />
-                                @signer.DocumentSignature.FullName <br />
-                                @signer.DocumentSignature.SignatureMethodUniqueId <br />
+                                    @signer.DocumentSignature.SignatureMethod.ToString() <br />
+                                    @signer.DocumentSignature.FullName <br />
+                                    @signer.DocumentSignature.SignatureMethodUniqueId <br />
                                 </p>
                             </div>
 
@@ -33,17 +33,23 @@
                         <MatChipSet>
                             <MatChip Label="@signer.SignatureType.Mechanism.ToString()"></MatChip>
                             <MatChip Label="@signer.RedirectSettings.RedirectMode.ToString()" LeadingIcon="double_arrow"></MatChip>
+                            <MatChip Label="@($"Order: {signer.Order}")" LeadingIcon="format_list_numbered"></MatChip>
+                            <MatChip Label="@($"Required: {signer.Required}")"></MatChip>
                         </MatChipSet>
-                    </MatCardContent>
+                    </div>
                     <MatCardActions>
-                        <AppButton Theme="Static.Themes.BlueIsh" OnClick="@(() => DocumentService.EditSigner = signer.ExternalSignerId)" Icon="edit">Edit</AppButton>
+                        @if (signer.DocumentSignature == null)
+                        {
+                            <AppButton Theme="Static.Themes.Warn" OnClick="@(() => DeleteSigner(signer.Id, signer.ExternalSignerId))">Delete</AppButton>
+                        }
+                        <AppButton Theme="Static.Themes.BlueIsh" OnClick="@(() => DocumentService.EditSigner = signer.ExternalSignerId)" Icon="edit">Details</AppButton>
                         @if (!string.IsNullOrWhiteSpace(signer.Url))
                         {
                             <AppButton OnClick="@(() => Sign(signer))">Sign</AppButton>
                         }
                         else if (signer.DocumentSignature != null)
                         {
-                            <MatButton Raised="true" OnClick="@(() => ViewDocumentSignature(signer))">View signature</MatButton>
+                            <AppButton OnClick="@(() => ViewDocumentSignature(signer))">View signature</AppButton>
                         }
                     </MatCardActions>
                 </MatCard>
@@ -155,5 +161,19 @@
     protected async Task AddSigner()
     {
         await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.AddSigner());
+    }
+
+    private async Task DeleteSigner(Guid id, string extSignerId)
+    {
+        if (!Guid.Empty.Equals(id))
+        {
+            await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.DeleteSigner(id));
+        }
+
+        if (this.Signers != null && !string.IsNullOrWhiteSpace(extSignerId))
+        {
+            this.DocumentService.Document.Signers = this.Signers.Where(s => s.ExternalSignerId != extSignerId).ToList();
+        }
+        DocumentService.NotifyStateChanged();
     }
 }
