@@ -9,6 +9,10 @@
     <div class="doc-status">
         <p>Document status</p>
         <h3>@(Document.Status?.DocumentStatus.ToString() ?? "Not created yet")</h3>
+        @if (Document.Status != null)
+        {
+            <p> @Document.Signers.Count(s => s.DocumentSignature != null) / @(Document.Advanced.RequiredSignatures) required signatures received</p>
+        }
     </div>
 
     <MatTextField @bind-Value="@Document.ExternalId" Label="External Id" Outlined="true"></MatTextField>
@@ -28,12 +32,13 @@
     protected DemoDocument Document;
 
     [Parameter]
-    public EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
+    public EventCallback<Task>
+    OnExecuteWithErrorHandler { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        Document = DocumentService.Document;
+    Document = DocumentService.Document;
     }
 
-   
-}
+
+    }

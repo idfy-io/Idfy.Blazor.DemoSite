@@ -13,54 +13,66 @@
 
         @foreach (var signer in Signers)
         {
-            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                <MatCard Class="app-padding signer-card">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+            <MatCard Class="app-padding signer-card">
 
-                    <div Class="app-padding">
-                        <p>@(signer.SignerInfo.FirstName ?? "Anonymous") @(signer.SignerInfo.LastName ?? "Signer")</p>
-                        @if (@signer?.DocumentSignature != null)
+                <div Class="app-padding">
+                    <p>@(signer.SignerInfo.FirstName ?? "Anonymous") @(signer.SignerInfo.LastName ?? "Signer")</p>
+                    @if (@signer?.DocumentSignature != null)
                         {
-                            <div class="doc-status">
-                                <b>Signed with</b>
-                                <p>
-                                    @signer.DocumentSignature.SignatureMethod.ToString() <br />
-                                    @signer.DocumentSignature.FullName <br />
-                                    @signer.DocumentSignature.SignatureMethodUniqueId <br />
-                                </p>
-                            </div>
-
-                        }
-                        <MatChipSet>
-                            <MatChip Label="@signer.SignatureType.Mechanism.ToString()"></MatChip>
-                            <MatChip Label="@signer.RedirectSettings.RedirectMode.ToString()" LeadingIcon="double_arrow"></MatChip>
-                            <MatChip Label="@($"Order: {signer.Order}")" LeadingIcon="format_list_numbered"></MatChip>
-                            <MatChip Label="@($"Required: {signer.Required}")"></MatChip>
-                        </MatChipSet>
+                    <div class="doc-status">
+                        <b>Signed with</b>
+                        <p>
+                            @signer.DocumentSignature.SignatureMethod.ToString() <br />
+                            @signer.DocumentSignature.FullName <br />
+                            @signer.DocumentSignature.SignatureMethodUniqueId <br />
+                        </p>
                     </div>
-                    <MatCardActions>
-                        @if (signer.DocumentSignature == null)
-                        {
-                            <AppButton Theme="Static.Themes.Warn" OnClick="@(() => DeleteSigner(signer.Id, signer.ExternalSignerId))">Delete</AppButton>
                         }
-                        <AppButton Theme="Static.Themes.BlueIsh" OnClick="@(() => DocumentService.EditSigner = signer.ExternalSignerId)" Icon="edit">Details</AppButton>
+                    <MatChipSet>
+                        <MatChip Label="@signer.SignatureType.Mechanism.ToString()"></MatChip>
+                        <MatChip Label="@signer.RedirectSettings.RedirectMode.ToString()" LeadingIcon="double_arrow"></MatChip>
+                        <MatChip Label="@($"Order: {signer.Order}")" LeadingIcon="format_list_numbered"></MatChip>
+                        <MatChip Label="@($"Required: {signer.Required}")"></MatChip>
+                        @if(signer.ExtraInfo?.Types != null)
+                        {
+                            @foreach(var type in signer.ExtraInfo.Types)
+                            {
+                                <MatChip LeadingIcon="@MatIconNames.Info" Label="@(type.ToString())"></MatChip>
+                            }
+                        }
+                    </MatChipSet>
+                </div>
+                <MatCardActions>
+                    <MatCardActionButtons>
+                        <AppButton Theme="Static.Themes.BlueIsh" Icon="@MatIconNames.More_horiz" OnClick="@(() => DocumentService.EditSigner = signer.ExternalSignerId)">Details</AppButton>
                         @if (!string.IsNullOrWhiteSpace(signer.Url))
-                        {
-                            <AppButton OnClick="@(() => Sign(signer))">Sign</AppButton>
-                        }
-                        else if (signer.DocumentSignature != null)
-                        {
-                            <AppButton OnClick="@(() => ViewDocumentSignature(signer))">View signature</AppButton>
-                        }
-                    </MatCardActions>
-                </MatCard>
-            </div>
+                            {
+                        <AppButton Icon="@MatIconNames.Edit" OnClick="@(() => Sign(signer))">Sign</AppButton>
+                            }
+                            else if (signer.DocumentSignature != null)
+                            {
+                        <AppButton OnClick="@(() => ViewDocumentSignature(signer))">View signature</AppButton>
+                            }
+                    </MatCardActionButtons>
+                    <MatCardActionIcons>
+                        @if (signer.DocumentSignature == null)
+                            {
+                        <MatIconButton OnClick="@(() => DeleteSigner(signer.Id, signer.ExternalSignerId))" Icon="@MatIconNames.Delete"></MatIconButton>
+                            }
+                        <MatIconButton OnClick="@(() => DuplicateSigner(signer))" Icon="@MatIconNames.File_copy"></MatIconButton>
+                    </MatCardActionIcons>
+
+                </MatCardActions>
+            </MatCard>
+        </div>
 
         }
     </div>
 </div>
 @if (DocumentService.Document.Status?.DocumentStatus != Signature.DocumentStatus.Signed)
 {
-    <MatButton Class="full-width btn-margin" OnClick="@AddSigner" TrailingIcon="tag_faces">Add signer</MatButton>
+<MatButton Class="full-width btn-margin" OnClick="@AddSigner" TrailingIcon="tag_faces">Add signer</MatButton>
 }
 <MatDialog Class="large-dialog" @bind-IsOpen="@signatureDialogIsOpen">
     <MatDialogTitle>Signature data</MatDialogTitle>
@@ -69,41 +81,41 @@
         @if (CurrentSigner?.DocumentSignature != null)
         {
             var signature = CurrentSigner.DocumentSignature;
-            <div class="mat-layout-grid">
-                <div class="mat-layout-grid-inner">
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Name</h3>
-                        <p>Full: @signature.FullName</p>
-                        <p>Last: @signature.LastName</p>
-                        <p>Middle: @signature.MiddleName</p>
-                        <p>First: @signature.FirstName</p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Signature method</h3>
-                        <p>Type: @signature.SignatureMethod </p>
-                        <p>Unique Id: @signature.SignatureMethodUniqueId</p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Date of birth</h3>
-                        <p>@(signature.DateOfBirth ?? "Not set") </p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">National Id / Soc sec</h3>
-                        <p>Country code: @(signature.SocialSecurityNumber?.CountryCode ?? "Not set")  </p>
-                        <p>Value: @(signature.SocialSecurityNumber?.Value ?? "Not set") </p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Signed time</h3>
-                        <p>@signature.SignedTime UTC</p>
-                    </div>
-                    <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
-                        <h3 class="app-title">Client Ip</h3>
-                        <p>@signature.ClientIp </p>
-                    </div>
+        <div class="mat-layout-grid">
+            <div class="mat-layout-grid-inner">
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">Name</h3>
+                    <p>Full: @signature.FullName</p>
+                    <p>Last: @signature.LastName</p>
+                    <p>Middle: @signature.MiddleName</p>
+                    <p>First: @signature.FirstName</p>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">Signature method</h3>
+                    <p>Type: @signature.SignatureMethod </p>
+                    <p>Unique Id: @signature.SignatureMethodUniqueId</p>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">Date of birth</h3>
+                    <p>@(signature.DateOfBirth ?? "Not set") </p>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">National Id / Soc sec</h3>
+                    <p>Country code: @(signature.SocialSecurityNumber?.CountryCode ?? "Not set")  </p>
+                    <p>Value: @(signature.SocialSecurityNumber?.Value ?? "Not set") </p>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">Signed time</h3>
+                    <p>@signature.SignedTime UTC</p>
+                </div>
+                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-6">
+                    <h3 class="app-title">Client Ip</h3>
+                    <p>@signature.ClientIp </p>
                 </div>
             </div>
-            <h3>Resources</h3>
-            <LinksList Signer="CurrentSigner"></LinksList>
+        </div>
+        <h3>Resources</h3>
+        <LinksList Signer="CurrentSigner"></LinksList>
         }
     </MatDialogContent>
     <MatDialogActions>
@@ -149,6 +161,15 @@
     private void CloseDocumentSignature()
     {
         this.signatureDialogIsOpen = false;
+    }
+
+    private async Task DuplicateSigner(DemoSigner original)
+    {
+        var serialized = Newtonsoft.Json.JsonConvert.SerializeObject(original);
+        var clone = Newtonsoft.Json.JsonConvert.DeserializeObject<DemoSigner>(serialized);
+        clone.Id = Guid.Empty;
+        clone.ExternalSignerId = Guid.NewGuid().ToString();
+        await OnExecuteWithErrorHandler.InvokeAsync(DocumentService.AddSigner(clone));
     }
 
     private async Task DeleteSignature()

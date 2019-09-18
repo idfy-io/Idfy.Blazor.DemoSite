@@ -118,14 +118,19 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 },
                 Tags = new List<string>()
             };
-
-            if(Document?.Status?.DocumentStatus != null)
+            await AddSigner(signer);
+          
+        }
+        public async Task AddSigner(DemoSigner signer)
+        {
+            if (Document?.Status?.DocumentStatus != null)
             {
                 signer = await AddOrUpdateSigner(signer);
             }
 
             Document.Signers.Add(signer);
         }
+
 
         public async Task<DemoSigner> AddOrUpdateSigner(DemoSigner signer)
         {
