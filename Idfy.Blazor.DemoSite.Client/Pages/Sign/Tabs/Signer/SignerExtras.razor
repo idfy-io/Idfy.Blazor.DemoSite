@@ -19,12 +19,12 @@
 <MatDialog Class="large-dialog" @bind-IsOpen="@dialogOpen">
     <MatDialogContent Class="large-dialog-content">
         <h3>Extra info</h3>
-        <p>Currently ordered</p>
         @if (Signer.ExtraInfo?.Types != null)
         {
+            <p>Currently ordered</p>
             @foreach (var info in Signer.ExtraInfo.Types)
             {
-                var subAndHref = GetSubtitleAndHref(info);
+                var subAndHref = GetSubtitleAndHref(info.ToString());
                 <MatList>
                     <MatListItem OnClick="@(() => DownloadResource(subAndHref.Item2))">
                         <MatListItemText>
@@ -43,7 +43,40 @@
             <MatSelect Outlined="true" HelperText="Pick a new extra info to order" Label="Add extra info" ValueChanged="AddExtraInfo">
                 <MatOption Value=""></MatOption>
                 @foreach (var type in ((ExtraInfoSignerType[])Enum.GetValues(typeof(ExtraInfoSignerType))).Where(e => Signer.ExtraInfo?.Types == null
-               || !Signer.ExtraInfo.Types.Contains(e)))
+            || !Signer.ExtraInfo.Types.Contains(e)))
+                {
+                    <MatOption Value="@type.ToString()">@type.ToString()</MatOption>
+                }
+            </MatSelect>
+        </div>
+
+        <h3>Addons</h3>
+        @if (Signer.Addons?.Types != null)
+        {
+            <p>Currently ordered</p>
+
+            @foreach (var addon in Signer.Addons.Types)
+            {
+                var subAndHref = GetSubtitleAndHref(addon.ToString());
+                <MatList>
+                    <MatListItem OnClick="@(() => DownloadResource(subAndHref.Item2))">
+                        <MatListItemText>
+                            <MatListItemPrimaryText>@addon.ToString()</MatListItemPrimaryText>
+                            <MatListItemSecondaryText>@subAndHref.Item1</MatListItemSecondaryText>
+                        </MatListItemText>
+                    </MatListItem>
+                </MatList>
+            }
+        }
+        else
+        {
+            <p>Nothing is ordered here..</p>
+        }
+        <div class="app-padding">
+            <MatSelect Outlined="true" HelperText="Pick a new addon to order" Label="Ïnclude addons" ValueChanged="IncludeAddon">
+                <MatOption Value=""></MatOption>
+                @foreach (var type in ((AddonSignerType[])Enum.GetValues(typeof(AddonSignerType))).Where(e => Signer.Addons?.Types == null
+            || !Signer.Addons.Types.Contains(e)))
                 {
                     <MatOption Value="@type.ToString()">@type.ToString()</MatOption>
                 }
@@ -71,11 +104,11 @@
     public DemoSigner Signer { get; set; }
 
 
-    (string, string) GetSubtitleAndHref(ExtraInfoSignerType type)
+    (string, string) GetSubtitleAndHref(string type)
     {
         if (Signer.Links != null)
         {
-            var match = Signer.Links.FirstOrDefault(l => l.Rel.Equals(type.ToString(), StringComparison.InvariantCultureIgnoreCase));
+            var match = Signer.Links.FirstOrDefault(l => l.Rel.Equals(type, StringComparison.InvariantCultureIgnoreCase));
 
             if (!string.IsNullOrWhiteSpace(match?.Href))
             {
@@ -102,6 +135,22 @@
         if (Enum.TryParse(value, out ExtraInfoSignerType result))
         {
             Signer.ExtraInfo.Types.Add(result);
+        }
+    }   
+    
+    void IncludeAddon(string value)
+    {
+        if (Signer.Addons?.Types == null)
+        {
+            Signer.Addons = new AddonsSignerRequest()
+            {
+                Types = new List<AddonSignerType>()
+            };
+        }
+
+        if (Enum.TryParse(value, out AddonSignerType result))
+        {
+            Signer.Addons.Types.Add(result);
         }
     }
 

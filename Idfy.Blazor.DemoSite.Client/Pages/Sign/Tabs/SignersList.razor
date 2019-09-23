@@ -29,18 +29,26 @@
                         </p>
                     </div>
                         }
-                    <MatChipSet>
-                        <MatChip Label="@signer.SignatureType.Mechanism.ToString()"></MatChip>
-                        <MatChip Label="@signer.RedirectSettings.RedirectMode.ToString()" LeadingIcon="double_arrow"></MatChip>
-                        <MatChip Label="@($"Order: {signer.Order}")" LeadingIcon="format_list_numbered"></MatChip>
-                        <MatChip Label="@($"Required: {signer.Required}")"></MatChip>
-                        @if(signer.ExtraInfo?.Types != null)
+                <MatChipSet>
+                    <MatChip Label="@signer.SignatureType.Mechanism.ToString()"></MatChip>
+                    <MatChip Label="@signer.RedirectSettings.RedirectMode.ToString()" LeadingIcon="double_arrow"></MatChip>
+                    <MatChip Label="@($"Order: {signer.Order}")" LeadingIcon="format_list_numbered"></MatChip>
+                    <MatChip Label="@($"Required: {signer.Required}")"></MatChip>
+                    <MatChip Label="@($"GetSSN: {signer.GetSocialSecurityNumber}")"></MatChip>
+                    @if (signer.ExtraInfo?.Types != null)
+                    {
+                        @foreach (var type in signer.ExtraInfo.Types)
                         {
-                            @foreach(var type in signer.ExtraInfo.Types)
-                            {
-                                <MatChip LeadingIcon="@MatIconNames.Info" Label="@(type.ToString())"></MatChip>
-                            }
+                            <MatChip LeadingIcon="@MatIconNames.Info" Label="@(type.ToString())"></MatChip>
                         }
+                    }
+                    @if (signer.Addons?.Types != null)
+                    {
+                        @foreach (var type in signer.Addons.Types)
+                        {
+                            <MatChip LeadingIcon="@MatIconNames.Add" Label="@(type.ToString())"></MatChip>
+                        }
+                    }
                     </MatChipSet>
                 </div>
                 <MatCardActions>
