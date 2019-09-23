@@ -1,5 +1,9 @@
 ﻿@using Idfy.Blazor.DemoSite.Shared;
 @using Idfy.Signature;
+@using Services;
+
+@inject IJSRuntime JsRuntime;
+@inject NavigationManager uriHelper;
 
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
@@ -22,7 +26,7 @@
             {
                 var subAndHref = GetSubtitleAndHref(info);
                 <MatList>
-                    <MatListItem Href="@subAndHref.Item2">
+                    <MatListItem OnClick="@(() => DownloadResource(subAndHref.Item2))">
                         <MatListItemText>
                             <MatListItemPrimaryText>@info.ToString()</MatListItemPrimaryText>
                             <MatListItemSecondaryText>@subAndHref.Item1</MatListItemSecondaryText>
@@ -35,17 +39,17 @@
         {
             <p>Nothing is ordered here..</p>
         }
-    <div class="app-padding">
-        <MatSelect Outlined="true" HelperText="Pick a new extra info to order" Label="Add extra info" ValueChanged="AddExtraInfo">
-            <MatOption Value=""></MatOption>
-            @foreach (var type in ((ExtraInfoSignerType[])Enum.GetValues(typeof(ExtraInfoSignerType))).Where(e => Signer.ExtraInfo?.Types == null
-            || !Signer.ExtraInfo.Types.Contains(e)))
-            {
-                <MatOption Value="@type.ToString()">@type.ToString()</MatOption>
-            }
-        </MatSelect>
-    </div>
-   
+        <div class="app-padding">
+            <MatSelect Outlined="true" HelperText="Pick a new extra info to order" Label="Add extra info" ValueChanged="AddExtraInfo">
+                <MatOption Value=""></MatOption>
+                @foreach (var type in ((ExtraInfoSignerType[])Enum.GetValues(typeof(ExtraInfoSignerType))).Where(e => Signer.ExtraInfo?.Types == null
+               || !Signer.ExtraInfo.Types.Contains(e)))
+                {
+                    <MatOption Value="@type.ToString()">@type.ToString()</MatOption>
+                }
+            </MatSelect>
+        </div>
+
     </MatDialogContent>
     <MatDialogActions>
         <div class="mat-layout-grid">
@@ -69,13 +73,13 @@
 
     (string, string) GetSubtitleAndHref(ExtraInfoSignerType type)
     {
-        if(Signer.Links != null)
+        if (Signer.Links != null)
         {
-            var match = Signer.Links.FirstOrDefault(l => l.Rel == type.ToString());
+            var match = Signer.Links.FirstOrDefault(l => l.Rel.Equals(type.ToString(), StringComparison.InvariantCultureIgnoreCase));
 
-            if(!string.IsNullOrWhiteSpace(match?.Href))
+            if (!string.IsNullOrWhiteSpace(match?.Href))
             {
-                return ("Completed, click to download result!", match.Href );
+                return ("Completed, click to download result!", match.Href);
             }
             if (!string.IsNullOrWhiteSpace(match?.Error))
             {
@@ -87,7 +91,7 @@
 
     void AddExtraInfo(string value)
     {
-        if(Signer.ExtraInfo?.Types == null)
+        if (Signer.ExtraInfo?.Types == null)
         {
             Signer.ExtraInfo = new ExtraInfoSignerRequest()
             {
@@ -95,9 +99,16 @@
             };
         }
 
-        if(Enum.TryParse(value, out ExtraInfoSignerType result))
+        if (Enum.TryParse(value, out ExtraInfoSignerType result))
         {
             Signer.ExtraInfo.Types.Add(result);
         }
+    }
+
+    async Task DownloadResource(string uri)
+    {
+
+        var url = $"{uriHelper.BaseUri}api/Sign/DownloadResource?url={uri}";
+        await JsRuntime.InvokeAsync<object>("open", url, "_blank");
     }
 }

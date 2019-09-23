@@ -1,4 +1,8 @@
 ﻿@using Blazor.DemoSite.Shared;
+@using Services;
+
+@inject IJSRuntime JsRuntime;
+@inject NavigationManager uriHelper;
 
 
 @if (Signer.Links != null || Signer.Links.Any())
@@ -6,7 +10,7 @@
     <MatList>
         @foreach (var link in Signer.Links)
         {
-            <MatListItem Href="@link.Href">
+            <MatListItem OnClick="@(() => DownloadResource(link.Href))">
                 <MatListItemText>
                     <MatListItemPrimaryText>@link.Rel</MatListItemPrimaryText>
                     <MatListItemSecondaryText>
@@ -30,5 +34,12 @@ else
 
     [Parameter]
     public DemoSigner Signer { get; set; }
+
+    async Task DownloadResource(string uri)
+    {
+
+        var url = $"{uriHelper.BaseUri}api/Sign/DownloadResource?url={uri}";
+        await JsRuntime.InvokeAsync<object>("open", url, "_blank");
+    }
 
 }

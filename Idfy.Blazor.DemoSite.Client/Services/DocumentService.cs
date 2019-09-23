@@ -366,7 +366,6 @@ namespace Idfy.Blazor.DemoSite.Client.Services
         }
 
 
-
         public void Dispose()
         {
             this.httpClient.Dispose();

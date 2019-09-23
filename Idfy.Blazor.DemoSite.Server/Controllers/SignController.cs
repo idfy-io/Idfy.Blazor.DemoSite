@@ -172,6 +172,16 @@ namespace Idfy.Blazor.DemoSite.Server.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> DownloadResource(string url)
+        {
+            var env = SignatureServiceWrapper.SetEnvironment(Request.Headers);
+            var service = SignatureServiceWrapper.GetFeaturesApiClient(env);
+            var result = await service.GetFileAsync(url);
+            return Ok(result);
+        }
+
 
     }
 }
