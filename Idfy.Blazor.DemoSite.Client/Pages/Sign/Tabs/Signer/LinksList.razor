@@ -37,7 +37,7 @@ else
 
     async Task DownloadResource(string uri)
     {
-
+        if(string.IsNullOrWhiteSpace(uri)) return;        
         var url = $"{uriHelper.BaseUri}api/Sign/DownloadResource?url={uri}";
         await JsRuntime.InvokeAsync<object>("open", url, "_blank");
     }
