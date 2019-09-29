@@ -21,7 +21,7 @@
                             <div class="mat-layout-grid-inner">
                                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
                                     Id: @SignerData.Id
-                                </div>                              
+                                </div>
                                 <div class="mat-layout-grid-cell mat-layout-grid-cell-span-2">
                                     <MatButton Outlined="true" Class="full-width" OnClick="UpdateSigner">Save changes</MatButton>
                                 </div>
@@ -58,6 +58,7 @@
                     <SignatureMethods Signer="@SignerData"></SignatureMethods>
                     <RedirectSettings Signer="@SignerData"></RedirectSettings>
                     <SignerUi Signer="@SignerData"></SignerUi>
+                    <AuthBeforeSign SignerData="@SignerData"></AuthBeforeSign>
                     <AdvancedSignerOpts SignerData="@SignerData"></AdvancedSignerOpts>
                     <SignerExtras Signer="@SignerData"></SignerExtras>
 
@@ -69,7 +70,8 @@
                 }
             </div>
         </MatCard>
-       
+        <AppButton Icon="home" Theme="Static.Themes.BlueIsh" OnClick="@(() => this.DocumentService.EditSigner = null)">Close signer edit</AppButton>
+
     </div>
 
 @code {

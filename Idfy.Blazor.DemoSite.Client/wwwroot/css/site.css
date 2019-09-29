@@ -16,6 +16,13 @@ app {
     flex-flow: column wrap
 }
 
+#app-bar {
+    background: #fff;
+    background-color: #fff;
+    color: black;
+
+}
+
 #create-doc-container .mat-tab-group {
     min-height: 500px;
     border: 1px solid #d9d9d9;
