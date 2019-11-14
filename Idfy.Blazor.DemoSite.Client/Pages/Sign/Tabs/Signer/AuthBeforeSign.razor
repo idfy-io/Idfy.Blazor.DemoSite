@@ -10,15 +10,15 @@
                 <MatOption Value=""></MatOption>
                 @foreach (var value in Enum.GetValues(typeof(Idfy.Signature.AuthenticationMechanism)))
                 {
-                    <MatOption Value="value.ToString()">@value.ToString()</MatOption>
+                    <MatOption Value="@value.ToString()">@value.ToString()</MatOption>
                 }
             </MatSelect>
         </div>
         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
-            <MatTextField Class="full-width no-margin" Outlined="true" @bind-Value="SignerData.Authentication.SocialSecurityNumber" Label="SSN / National Id"></MatTextField>
+            <MatTextField Class="full-width no-margin" Outlined="true" @bind-Value="@SignerData.Authentication.SocialSecurityNumber" Label="SSN / National Id"></MatTextField>
         </div>
         <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
-            <MatTextField Class="full-width no-margin" Outlined="true" @bind-Value="SignerData.Authentication.SignatureMethodUniqueId" Label="Unique Id"></MatTextField>
+            <MatTextField Class="full-width no-margin" Outlined="true" @bind-Value="@SignerData.Authentication.SignatureMethodUniqueId" Label="Unique Id"></MatTextField>
         </div>
     </div>
 </div>
