@@ -1,0 +1,80 @@
+﻿@using Blazor.DemoSite.Shared;
+@using Services;
+
+@inject DocumentService DocService;
+
+
+<h3 class="app-title">Dialogs</h3>
+
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-4">
+            <MatCheckbox @bind-Checked="UseDialogs">Use Dialogs</MatCheckbox>
+        </div>
+        @if (_useDialogs)
+        {
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-8">
+                <MatCheckbox @bind-Checked="ConfirmDialogBefore">Confirm dialog before</MatCheckbox>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public DemoSigner Signer { get; set; }
+    private bool _useDialogs;
+    private bool ConfirmDialogBefore
+    {
+        get => Signer.Ui?.Dialogs?.Before?.UseCheckBox ?? false;
+        set
+        {
+            if(this.Signer.Ui?.Dialogs?.Before != null)
+            {
+                this.Signer.Ui.Dialogs.Before.UseCheckBox = value;
+            }
+        }
+    }
+
+    public bool UseDialogs
+    {
+        get => _useDialogs;
+        set
+        {
+            _useDialogs = value;
+
+            if (_useDialogs)
+            {
+                if (this.Signer.Ui.Dialogs == null)
+                {
+                    this.Signer.Ui.Dialogs = new Signature.Dialogs()
+                    {
+                        Before = new Signature.DialogBefore()
+                        {
+                            Title = "Hi",
+                            Message = "Before we can complete your order, you have to agree to our terms. The processing will continue when you have signed the agreement."
+                        },
+                        After = new Signature.DialogAfter()
+                        {
+                            Title = "Processing time",
+                            Message = "Your order will be processed within 5 days, you will receive an email when the item is ready."
+                        }
+                    };
+                }
+            }
+            else
+            {
+                Signer.Ui.Dialogs = null;
+            }
+            this.DocService.NotifyStateChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Signer.Ui?.Dialogs != null)
+        {
+            this._useDialogs = true;
+        }
+    }
+}
