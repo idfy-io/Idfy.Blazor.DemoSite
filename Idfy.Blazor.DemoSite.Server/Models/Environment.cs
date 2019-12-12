@@ -7,5 +7,6 @@
         public string ApiBaseUrl { get; set; }
         public string TokenUrl { get; set; }
         public string OauthBaseUrl { get; internal set; }
+        public string AddScopes { get; set; }
     }
 }

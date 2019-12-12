@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Idfy.Blazor.DemoSite.Server.Clients
 {
@@ -11,16 +13,23 @@ namespace Idfy.Blazor.DemoSite.Server.Clients
         private readonly ConcurrentDictionary<string, SignatureService> environments;
         private readonly ConcurrentDictionary<string, NewFeaturesApiClient> newFeatureClients;
         private readonly AppSettings appSettings;
+        private readonly string[] DefaultScopes = new [] { "document_read", "document_write", "document_file" };
 
 
         public SignatureServiceWrapper(AppSettings appSettings)
         {
             environments = new ConcurrentDictionary<string, SignatureService>();
-            newFeatureClients = new ConcurrentDictionary<string, NewFeaturesApiClient>();
-            var scopes = new[] { OAuthScope.DocumentRead, OAuthScope.DocumentWrite, OAuthScope.DocumentFile };
+            newFeatureClients = new ConcurrentDictionary<string, NewFeaturesApiClient>();          
 
             foreach (var environment in appSettings.Environments)
             {
+                var scopes = DefaultScopes.ToList();
+
+                if(!string.IsNullOrWhiteSpace(environment.Value.AddScopes))
+                {
+                    scopes.AddRange(environment.Value.AddScopes.Split(' '));
+                }
+
                 environments.TryAdd(environment.Key, new SignatureService(environment.Value.ClientId.Trim(), environment.Value.ClientSecret.Trim(), scopes));
                 newFeatureClients.TryAdd(environment.Key, new NewFeaturesApiClient(environment.Value.ClientId.Trim(), environment.Value.ClientSecret.Trim(), scopes));
             }

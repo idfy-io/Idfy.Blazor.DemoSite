@@ -12,7 +12,7 @@ namespace Idfy.Blazor.DemoSite.Server
 
     public class NewFeaturesApiClient : IdfyBaseService, INewFeaturesApiClient
     {
-        public NewFeaturesApiClient(string clientId, string clientSecret, IEnumerable<OAuthScope> scopes) 
+        public NewFeaturesApiClient(string clientId, string clientSecret, IEnumerable<string> scopes) 
             : base(clientId, clientSecret, scopes)
         {
 
