@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
+using System;
 using System.Threading.Tasks;
 
 namespace Idfy.Blazor.DemoSite.Client.Services
@@ -29,6 +30,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
         {
             return jSRuntime.InvokeVoidAsync("blazorExtras.clearLocalStorage");
         }
+
     }
 
     public class FileUpload

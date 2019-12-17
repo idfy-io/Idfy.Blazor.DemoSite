@@ -29,26 +29,26 @@
                         </p>
                     </div>
                         }
-                <MatChipSet>
-                    <MatChip Label="@signer.SignatureType.Mechanism.ToString()"></MatChip>
-                    <MatChip Label="@signer.RedirectSettings.RedirectMode.ToString()" LeadingIcon="double_arrow"></MatChip>
-                    <MatChip Label="@($"Order: {signer.Order}")" LeadingIcon="format_list_numbered"></MatChip>
-                    <MatChip Label="@($"Required: {signer.Required}")"></MatChip>
-                    <MatChip Label="@($"GetSSN: {signer.GetSocialSecurityNumber}")"></MatChip>
-                    @if (signer.ExtraInfo?.Types != null)
-                    {
+                    <MatChipSet>
+                        <MatChip Label="@signer.SignatureType.Mechanism.ToString()"></MatChip>
+                        <MatChip Label="@signer.RedirectSettings.RedirectMode.ToString()" LeadingIcon="double_arrow"></MatChip>
+                        <MatChip Label="@($"Order: {signer.Order}")" LeadingIcon="format_list_numbered"></MatChip>
+                        <MatChip Label="@($"Required: {signer.Required}")"></MatChip>
+                        <MatChip Label="@($"GetSSN: {signer.GetSocialSecurityNumber}")"></MatChip>
+                        @if (signer.ExtraInfo?.Types != null)
+                            {
                         @foreach (var type in signer.ExtraInfo.Types)
-                        {
-                            <MatChip LeadingIcon="@MatIconNames.Info" Label="@(type.ToString())"></MatChip>
-                        }
-                    }
-                    @if (signer.Addons?.Types != null)
-                    {
+                                {
+                        <MatChip LeadingIcon="@MatIconNames.Info" Label="@(type.ToString())"></MatChip>
+                                }
+                            }
+                        @if (signer.Addons?.Types != null)
+                            {
                         @foreach (var type in signer.Addons.Types)
-                        {
-                            <MatChip LeadingIcon="@MatIconNames.Add" Label="@(type.ToString())"></MatChip>
-                        }
-                    }
+                                {
+                        <MatChip LeadingIcon="@MatIconNames.Add" Label="@(type.ToString())"></MatChip>
+                                }
+                            }
                     </MatChipSet>
                 </div>
                 <MatCardActions>
@@ -139,10 +139,13 @@
         </div>
     </MatDialogActions>
 </MatDialog>
+<Idfy.Blazor.DemoSite.Client.Pages.Sign.IframeSign.IframeSign DialogIsOpen="@showIframeModal" Src="@iframeUrl"></Idfy.Blazor.DemoSite.Client.Pages.Sign.IframeSign.IframeSign>
 
 
 @code {
     bool signatureDialogIsOpen;
+    bool showIframeModal = false;
+    string iframeUrl;
 
     [Parameter]
     public EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
@@ -157,7 +160,13 @@
 
     private async Task Sign(DemoSigner signer)
     {
-        await JsRuntime.InvokeAsync<object>("window.blazorExtras.openUrlExternal", signer.Url);
+        if (signer.RedirectSettings.RedirectMode.ToString().ToLowerInvariant().Contains("iframe"))
+        {
+            this.iframeUrl = signer.Url;
+            this.showIframeModal = true;
+        }
+        else
+            await JsRuntime.InvokeAsync<object>("window.blazorExtras.openUrlExternal", signer.Url);
     }
 
     private void ViewDocumentSignature(DemoSigner signer)

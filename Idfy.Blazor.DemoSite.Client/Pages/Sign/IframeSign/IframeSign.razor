@@ -1,0 +1,51 @@
+﻿@inject IJSRuntime JsRuntime;
+
+<MatDialog Class="large-dialog" @bind-IsOpen="@DialogIsOpen" CanBeClosed="false">
+    <MatDialogContent Class="large-dialog-content">
+        <iframe id="iframe-sign" frameborder="0" src="@Src"></iframe>
+        <MatChipSet>
+            @foreach (var message in Messages)
+            {
+                <MatChip Label="@message"></MatChip>
+            }
+        </MatChipSet>
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="@Close">Close</MatButton>
+    </MatDialogActions>
+</MatDialog>
+
+@code
+{
+    [Parameter]
+    public bool DialogIsOpen { get; set; }
+    [Parameter]
+    public string Src { get; set; }
+
+    public List<string> Messages { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.Messages = new List<string>();
+        await JsRuntime.InvokeVoidAsync("blazorExtras.addMessageEventListener", DotNetObjectReference.Create(this));
+    }
+
+    [JSInvokable]
+    public Task GetWebMessage(string @event)
+    {
+        Console.WriteLine(@event);
+        var res = Newtonsoft.Json.Linq.JObject.Parse(@event);
+        this.Messages.Add(res["type"]?.ToString());
+        this.StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+
+    void Close()
+    {
+        DialogIsOpen = false;
+    }
+
+
+}

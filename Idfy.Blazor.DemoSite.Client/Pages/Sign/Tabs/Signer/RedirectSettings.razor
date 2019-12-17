@@ -1,5 +1,6 @@
 @using Idfy.Blazor.DemoSite.Shared;
 @using Idfy.Signature;
+@inject NavigationManager NavigationManager;
 
 
 <h3 class="app-title">Redirect</h3>
@@ -9,23 +10,29 @@
             <MatSelect Label="Select redirect mode" Value="@Signer.RedirectSettings.RedirectMode.ToString()" ValueChanged="@((value) => SetRedirectMode(Signer, value))" Outlined="true">
                 @foreach (RedirectMode redirectMode in Enum.GetValues(typeof(RedirectMode)))
                 {
-                <MatOption Value="@redirectMode.ToString()">@redirectMode.ToString()</MatOption>
+                    <MatOption Value="@redirectMode.ToString()">@redirectMode.ToString()</MatOption>
                 }
             </MatSelect>
         </div>
         @if (!new[] { RedirectMode.DonotRedirect, RedirectMode.IframeWithWebmessaging }.Contains(Signer.RedirectSettings.RedirectMode))
         {
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
-            <MatTextField @bind-Value="@Signer.RedirectSettings.Success" Label="Success" FullWidth="true" Outlined="true"></MatTextField>
-        </div>
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                <MatTextField @bind-Value="@Signer.RedirectSettings.Success" Label="Success" FullWidth="true" Outlined="true"></MatTextField>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
 
-            <MatTextField @bind-Value="@Signer.RedirectSettings.Error" Label="Error" FullWidth="true" Outlined="true"></MatTextField>
-        </div>
-        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                <MatTextField @bind-Value="@Signer.RedirectSettings.Error" Label="Error" FullWidth="true" Outlined="true"></MatTextField>
+            </div>
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
 
-            <MatTextField @bind-Value="@Signer.RedirectSettings.Cancel" Label="Cancel" FullWidth="true" Outlined="true"></MatTextField>
-        </div>
+                <MatTextField @bind-Value="@Signer.RedirectSettings.Cancel" Label="Cancel" FullWidth="true" Outlined="true"></MatTextField>
+            </div>
+        }
+        @if (new[] { RedirectMode.IframeWithRedirectAndWebmessaging, RedirectMode.IframeWithWebmessaging }.Contains(Signer.RedirectSettings.RedirectMode))
+        {
+            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                <MatTextField @bind-Value="@Signer.RedirectSettings.Domain" Label="Domain" FullWidth="true" Outlined="true"></MatTextField>
+            </div>
         }
     </div>
 </div>
@@ -44,6 +51,11 @@
         if (Enum.TryParse(value, out redirectMode))
         {
             signer.RedirectSettings.RedirectMode = redirectMode;
+        }
+
+        if(new[] { RedirectMode.IframeWithRedirectAndWebmessaging, RedirectMode.IframeWithWebmessaging }.Contains(Signer.RedirectSettings.RedirectMode))
+        {
+            signer.RedirectSettings.Domain = new Uri(NavigationManager.BaseUri).Host;
         }
     }
 

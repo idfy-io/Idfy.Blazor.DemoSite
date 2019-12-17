@@ -33,6 +33,7 @@
             };
         });
     },
+
     openUrlExternal: (url) => {
         // Electron
         var isElectron = window && window.process && window.process.type;
@@ -42,6 +43,15 @@
         } else {
             window.open(url, "_blank");
         }
+    },
+
+    addMessageEventListener: (instance) => {
+        window.addEventListener("message", receiveMessage, false);
+
+        function receiveMessage(event) {           
+            instance.invokeMethodAsync('GetWebMessage', event.data);            
+        }       
     }
+
 };
 
