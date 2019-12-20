@@ -92,7 +92,9 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 },
                 RedirectSettings = new RedirectSettings()
                 {
-                    RedirectMode = RedirectMode.IframeWithWebmessaging
+                    RedirectMode = RedirectMode.IframeWithWebmessaging,
+                    Domain = new Uri(uriHelper.BaseUri).Host
+
                 },
                 ExternalSignerId = Guid.NewGuid().ToString(),
                 SignatureType = new SignatureType()
