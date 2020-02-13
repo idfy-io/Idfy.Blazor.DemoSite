@@ -29,7 +29,7 @@
                         </div>
                     }
 
-                    <h3 class="app-title">Name</h3>
+                    <h3 class="app-title">Info</h3>
                     <div class="mat-layout-grid">
                         <div class="mat-layout-grid-inner">
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
@@ -37,6 +37,9 @@
                             </div>
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
                                 <MatTextField Icon="perm_identity" @bind-Value="@SignerData.SignerInfo.LastName" Label="Lastname" Outlined="true"></MatTextField>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <MatTextField Icon="perm_identity" @bind-Value="@SignerData.SignerInfo.SocialSecurityNumber" Label="Prefill national Id" Outlined="true"></MatTextField>
                             </div>
                         </div>
                     </div>
