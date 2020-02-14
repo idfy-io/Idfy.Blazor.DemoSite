@@ -31,6 +31,11 @@ namespace Idfy.Blazor.DemoSite.Client.Services
             return jSRuntime.InvokeVoidAsync("blazorExtras.clearLocalStorage");
         }
 
+        public static ValueTask CopyToClipBoard(this IJSRuntime jsRuntime, string text)
+        {
+            return jsRuntime.InvokeVoidAsync("blazorExtras.copyToClipBoard", text);
+        }
+        
     }
 
     public class FileUpload

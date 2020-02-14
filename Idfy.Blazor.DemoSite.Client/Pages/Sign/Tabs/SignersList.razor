@@ -17,7 +17,7 @@
                 <MatCard Class="app-padding signer-card">
 
                     <div Class="app-padding">
-                        <p>@(signer.SignerInfo.FirstName ?? "Anonymous") @(signer.SignerInfo.LastName ?? "Signer")</p>
+                        <p><b>@(signer.SignerInfo.FirstName ?? "Anonymous") @(signer.SignerInfo.LastName ?? "Signer")</b></p>
                         @if (@signer?.DocumentSignature != null)
                         {
                             <div class="doc-status">
@@ -56,7 +56,8 @@
                             <AppButton Theme="Static.Themes.BlueIsh" Icon="@MatIconNames.More_horiz" OnClick="@(() => DocumentService.EditSigner = signer.ExternalSignerId)">Details</AppButton>
                             @if (!string.IsNullOrWhiteSpace(signer.Url))
                             {
-                                <AppButton Icon="@MatIconNames.Edit" OnClick="@(() => Sign(signer))">Sign</AppButton>
+                                <AppButton Theme="Static.Themes.BlueIsh" Icon="@MatIconNames.File_copy"  OnClick="@(() => JsRuntime.CopyToClipBoard(signer.Url))" >Url</AppButton>
+                                <AppButton Icon="@MatIconNames.Edit" OnClick="@(() => Sign(signer))">Sign</AppButton><br/>
                             }
                             else if (signer.DocumentSignature != null)
                             {
