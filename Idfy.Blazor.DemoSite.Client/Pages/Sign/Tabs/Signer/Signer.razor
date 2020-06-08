@@ -2,6 +2,7 @@
 @using Services;
 @using Static;
 @using Idfy.Blazor.DemoSite.Client.Components.Buttons;
+@using Idfy.Signature
 @inject IJSRuntime JsRuntime;
 @inject DocumentService DocumentService;
 
@@ -40,6 +41,15 @@
                             </div>
                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
                                 <MatTextField Icon="perm_identity" @bind-Value="@SignerData.SignerInfo.SocialSecurityNumber" Label="Prefill national Id" Outlined="true"></MatTextField>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <MatTextField Icon="@MatIconNames.Title" @bind-Value="@SignerData.SignerInfo.Title" Label="Title (CTO, Buyer,...)" Outlined="true"></MatTextField>
+                            </div>
+                            <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <MatTextField Icon="@MatIconNames.Location_city" @bind-Value="@SignerData.SignerInfo.OrganizationInfo.CompanyName" Label="Company name" Outlined="true"></MatTextField>
+                            </div>
+                             <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <MatTextField @bind-Value="@SignerData.SignerInfo.OrganizationInfo.OrgNo" Label="Org. Number" Outlined="true"></MatTextField>
                             </div>
                         </div>
                     </div>
@@ -90,6 +100,7 @@
     {
         this.SignerData = this.DocumentService.Document.Signers.FirstOrDefault(s =>
         s.ExternalSignerId == DocumentService.EditSigner);
+        if(SignerData.SignerInfo.OrganizationInfo == null) SignerData.SignerInfo.OrganizationInfo = new OrganizationInfo();
     }
 
     private async Task UpdateSigner()

@@ -1,6 +1,8 @@
 @using Idfy.Blazor.DemoSite.Shared
+@using Idfy.Signature
 @using Services;
 @using Microsoft.JSInterop;
+@using Idfy.Blazor.DemoSite.Client.Static
 
 @inject DocumentService DocumentService;
 @inject EnvironmentService EnvironmentService;
@@ -52,9 +54,32 @@
                                 <MatSlideToggle @bind-Checked="@doc.ConvertToPdf"></MatSlideToggle> <span>Convert to pdf</span>
                             </div>
 
+                            @if (DocumentService.Document != null)
+                            {
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
+                                    <p>Who should sign/view this?</p>
+                                </div>
+                                
+                                @if (doc.Title != DocumentService.Files.FirstOrDefault(f => f.Type == AttachmentType.Sign)?.Title)
+                                {
+                                    @foreach (var signer in DocumentService.Document.Signers)
+                                    {
+                                        <div class="mat-layout-grid-cell mat-layout-grid-cell-span-5">
+                                            <MatThemeProvider Theme="@SignerBtnTheme(signer.ExternalSignerId, doc)">
+                                                <MatButton Theme="@SignerBtnTheme(signer.ExternalSignerId, doc)"
+                                                           OnClick="@((args) => AddSignerToAttachment(signer.ExternalSignerId, doc))">
+                                                    @Helpers.SignerName(signer)
+                                                </MatButton>
+                                            </MatThemeProvider>
+                                        </div>
+                                    }
+                                }
+                                   
+                            }
+
                             @if (DocumentService.Document?.Status?.DocumentStatus == null)
                             {
-                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-3">
+                                <div class="mat-layout-grid-cell mat-layout-grid-cell-span-12">
                                     <input type="file" @onchange="@(e => UploadFile(doc))" id="fileUpload" />
                                 </div>
                             }
@@ -99,6 +124,8 @@
 
 @code {
 
+    bool MainDocDetermined = false;
+    
     [Parameter]
     public EventCallback<Task> OnExecuteWithErrorHandler { get; set; }
 
@@ -128,7 +155,26 @@
             Console.WriteLine(e);
         }
     }
-   
+
+    MatTheme SignerBtnTheme(string externalSignerId, DemoFile file)
+    {
+        return SignerExistsOnAttachment(externalSignerId, file) ? Themes.Success : Themes.BlueIsh;
+    }
+
+    void AddSignerToAttachment(string externalSignerId, DemoFile file)
+    {
+        if (file.SignersExtId == null) file.SignersExtId = new List<string>();
+        if (!file.SignersExtId.Any() || !SignerExistsOnAttachment(externalSignerId, file)) file.SignersExtId.Add(externalSignerId);
+        else file.SignersExtId = file.SignersExtId.Where(s => !s.Equals(externalSignerId)).ToList();
+        DocumentService.NotifyStateChanged();
+        Console.WriteLine(file);
+    }
+
+    bool SignerExistsOnAttachment(string externalSignerId, DemoFile file)
+    {
+        if (file.SignersExtId == null || !file.SignersExtId.Any()) return true;
+        return file.SignersExtId.Contains(externalSignerId);
+    }
 
     async Task UploadFile(DemoFile file)
     {

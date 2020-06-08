@@ -81,7 +81,7 @@ namespace Idfy.Blazor.DemoSite.Client.Services
         {
             var signer = new DemoSigner()
             {
-                SignerInfo = new SignerInfo()
+                SignerInfo = new DemoSignerInfo()
                 {
                     FirstName = firstName,
                     LastName = lastName,
@@ -195,7 +195,15 @@ namespace Idfy.Blazor.DemoSite.Client.Services
                 Base64Content = file.Data,
                 ConvertToPDF = file.ConvertToPdf,
                 FileName = file.FileName,
-                Base64ContentStyleSheet = file.Base64ContentStyleSheet
+                Base64ContentStyleSheet = file.Base64ContentStyleSheet,
+                Packaging = new Packaging()
+                {
+                    PadesSettings = new PadesSettings()
+                    {
+                        SecondaryLanguage = Language.EN,
+                        PrimaryLanguage = Language.NO
+                    }
+                }
             };
             file.Done = true;
         }
@@ -292,6 +300,20 @@ namespace Idfy.Blazor.DemoSite.Client.Services
 
             if(attachment.Id != null && attachment.Id !=  Document.DocumentId)
                 url += $"?id={attachment.Id}";
+
+            if (attachment.SignersExtId != null)
+            {
+                attachment.Signers = new List<Guid>();
+                foreach (var signerExtId in attachment.SignersExtId)
+                {
+                    var signer = this.Document.Signers.FirstOrDefault(s => s.ExternalSignerId == signerExtId);
+                    if (signer != null)
+                    {
+                        attachment.Signers.Add(signer.Id);
+                    }
+                }
+            }
+            
             do
             {              
                 await Task.Delay(1000 * attempt);

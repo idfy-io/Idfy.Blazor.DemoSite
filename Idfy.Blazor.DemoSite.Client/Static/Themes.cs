@@ -5,6 +5,12 @@ namespace Idfy.Blazor.DemoSite.Client.Static
 
     public static class Themes
     {
+        public static MatTheme GreyIsh => new MatTheme()
+        {
+            Primary = "#adadad",
+            Secondary = "#adadad"
+        };
+        
         public static MatTheme BlueIsh => new MatTheme()
         {
             Primary = "#4183c4",

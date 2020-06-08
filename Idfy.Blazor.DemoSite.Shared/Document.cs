@@ -8,6 +8,12 @@ namespace Idfy.Blazor.DemoSite.Shared
     {
         public new bool GetSocialSecurityNumber { get; set; }
         public new bool Required { get; set; }
+        public new DemoSignerInfo SignerInfo { get; set; }
+    }
+
+    public class DemoSignerInfo : SignerInfo
+    {
+        public string Title { get; set; }
     }
 
     public class DemoDocument: Document
@@ -33,7 +39,7 @@ namespace Idfy.Blazor.DemoSite.Shared
                 return Type.ToString();
             }
             set
-            {                
+            {                    
                 AttachmentType type;
                 if (Enum.TryParse(value, out type))
                 {
@@ -41,6 +47,8 @@ namespace Idfy.Blazor.DemoSite.Shared
                 }               
             }
         }
+
+        public List<string> SignersExtId { get; set; }
     }
     
 }
