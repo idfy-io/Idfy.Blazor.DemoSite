@@ -11,16 +11,16 @@ namespace Idfy.Blazor.DemoSite.Client.Static
             Secondary = "#adadad"
         };
         
-        public static MatTheme BlueIsh => new MatTheme()
+        public static MatTheme Signicat => new MatTheme()
         {
-            Primary = "#4183c4",
-            Secondary = "#8c9eff"
+            Primary = "#293440",
+            Secondary = "#293440"
         };
 
         public static MatTheme Success => new MatTheme()
         {
-            Primary = MatThemeColors.Green._500.Value,
-            Secondary = MatThemeColors.Green._500.Value
+            Primary = "#5BB0FF", // MatThemeColors.Green._500.Value,
+            Secondary = "#5BB0FF", // MatThemeColors.Green._500.Value
         };
 
         public static MatTheme Warn => new MatTheme()
