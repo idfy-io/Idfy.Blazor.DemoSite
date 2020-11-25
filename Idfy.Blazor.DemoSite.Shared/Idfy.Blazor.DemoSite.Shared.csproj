@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Idfy.SDK" Version="1.4.4" />
+    <PackageReference Include="Idfy.SDK" Version="2.4.0" />
   </ItemGroup>
 
 </Project>
